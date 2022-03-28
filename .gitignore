@@ -1,0 +1,7 @@
+# Python virtual environment files
+venv
+.python-version
+
+# VSCode local settings files
+.vscode
+*.code-workspace
