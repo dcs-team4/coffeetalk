@@ -2,6 +2,9 @@
 venv
 .python-version
 
+# Python cache
+__pycache__
+
 # VSCode local settings files
 .vscode
 *.code-workspace
