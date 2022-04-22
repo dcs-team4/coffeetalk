@@ -10,7 +10,7 @@ import (
 	"github.com/mochi-co/mqtt/server/listeners/auth"
 )
 
-// Starts an MQTT broker on the given port. Returns the server instance.
+// Starts an MQTT broker on the given port in a separate goroutine, and returns the server instance.
 func Start(port string) *mqtt.Server {
 	// Configures the broker server.
 	server := mqtt.NewServer(nil)

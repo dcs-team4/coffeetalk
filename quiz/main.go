@@ -20,7 +20,6 @@ func main() {
 
 	broker.Close()
 	fmt.Println("Finished")
-
 }
 
 // Listens for cancelling system signals.
