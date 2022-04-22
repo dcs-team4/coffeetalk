@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/dcs-team4/coffeetalk/quiz/broker"
+	"github.com/dcs-team4/coffeetalk/mqtt/broker"
 )
 
 func main() {
