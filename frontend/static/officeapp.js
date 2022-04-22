@@ -7,7 +7,10 @@
  const startQuiz = document.getElementById('start_quiz');
  const container = document.getElementById('container');
  const count = document.getElementById('count');
+ const question_title = document.getElementById('Question_title');
+const answer_title = document.getElementById('Answer_title');
  const questions = document.getElementById('questions');
+ const answers = document.getElementById('answer');
  let connected = false;
  let room;
  let motion_time = new Date(2018, 11, 24, 10, 33, 30, 0);               //random date
@@ -55,13 +58,17 @@
          if(message.destinationName == "TTM4115/t4/quiz/q"){          //If the message is questions
              questions.innerHTML = message.payloadString;
          }
+         else if (message.destinationName == "TTM4115/t4/quiz/a"){
+            answers.innerHTML = message.payloadString;
+         }
          else if(message.destinationName == "TTM4115/t4/quiz/s"){     //Else if the message is from the start/stop quiz channel
              if(message.payloadString == "Quiz_started"){            
                  startQuiz.disabled = true;                          
              }
              else if(message.payloadString == "Quiz_ended"){
                  startQuiz.disabled = false;
-                 questions.innerHTML = "-";
+                 questions.innerHTML = "";
+                 answers.innerHTML = "";
              }
          }
      }
@@ -100,7 +107,8 @@
              disconnect();
              connected = false;
              startQuiz.innerHTML = 'Start Quiz';
-             questions.innerHTML = '-';
+             questions.innerHTML = '';
+             answers.innerHTML = '';
              startQuiz.disabled = true;
          }
      }
@@ -139,10 +147,16 @@
  
  //Function taken from the twilio example to update the participant count
  function updateParticipantCount() {
-     if (!connected)
-         count.innerHTML = 'Disconnected.';
-     else
+     if (!connected){
+        count.innerHTML = 'You are disconnected';
+        answer_title.innerText = "";
+        question_title.innerHTML = "";
+     }
+     else{
          count.innerHTML = (room.participants.size + 1) + ' participants online.';
+        answer_title.innerText = "Answer:";
+        question_title.innerHTML = "Question:";
+     }
  };
  
  //Function taken from the twilio example to add new participants to the stream
@@ -244,9 +258,9 @@
  };
  
  //Function added to handle the start quiz button, uses mqtt broker to send the quiz started message to the other clients
- function startQuizHandler() {
+ function startQuizHandler(event) {
      event.preventDefault();
-     message = new Paho.MQTT.Message("Quiz_started");
+     var message = new Paho.MQTT.Message("Quiz_started");
      message.destinationName = "TTM4115/t4/quiz/s";
      client.send(message);
      startQuiz.disabled = true;
