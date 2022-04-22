@@ -14,24 +14,12 @@ import (
 )
 
 func main() {
-	sigs := make(chan os.Signal, 1)
-	done := make(chan bool, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-sigs
-		done <- true
-	}()
+	cancelSignal := listenSignal()
+	fmt.Println("Starting server...")
 
-	fmt.Println("Mochi MQTT Server initializing... TCP")
-
-	// An example of configuring various server options...
-	options := &mqtt.Options{
-		BufferSize:      0, // Use default values
-		BufferBlockSize: 0, // Use default values
-	}
-
-	server := mqtt.NewServer(options)
-	tcp := listeners.NewTCP("t1", ":1883")
+	// Configures server.
+	server := mqtt.NewServer(nil)
+	tcp := listeners.NewTCP("tcp1", ":1883")
 	err := server.AddListener(tcp, &listeners.Config{
 		Auth: new(auth.Allow),
 	})
@@ -39,16 +27,18 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Logs new connections and messages.
 	server.Events.OnConnect = func(client events.Client, packet events.Packet) {
-		fmt.Printf("%v connected!\n", client.ID)
+		log.Printf("%v connected!\n", client.ID)
 	}
-
-	server.Events.OnMessage = func(client events.Client, packet events.Packet) (newPacket events.Packet, err error) {
-		fmt.Printf("Message received on topic \"%v\"\n", packet.TopicName)
-
+	server.Events.OnMessage = func(client events.Client, packet events.Packet) (
+		events.Packet, error,
+	) {
+		log.Printf("Message received on topic \"%v\"\n", packet.TopicName)
 		return packet, nil
 	}
 
+	// Starts the server in a new goroutine.
 	go func() {
 		err := server.Serve()
 		if err != nil {
@@ -57,10 +47,26 @@ func main() {
 	}()
 	fmt.Println("Started!")
 
-	<-done
-	fmt.Println("Caught Signal")
+	// Waits for received cancel signal.
+	<-cancelSignal
 
 	server.Close()
 	fmt.Println("Finished")
 
+}
+
+// Listens for cancelling system signals.
+// Sends on the returned channel when a signal is received.
+func listenSignal() <-chan struct{} {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	cancelSignal := make(chan struct{}, 1)
+	go func() {
+		<-sigs
+		fmt.Println("Caught signal")
+		cancelSignal <- struct{}{}
+	}()
+
+	return cancelSignal
 }
