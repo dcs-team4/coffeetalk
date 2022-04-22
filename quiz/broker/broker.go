@@ -1,11 +1,8 @@
-package main
+package broker
 
 import (
 	"fmt"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 
 	mqtt "github.com/mochi-co/mqtt/server"
 	"github.com/mochi-co/mqtt/server/events"
@@ -13,13 +10,11 @@ import (
 	"github.com/mochi-co/mqtt/server/listeners/auth"
 )
 
-func main() {
-	cancelSignal := listenSignal()
-	fmt.Println("Starting server...")
-
-	// Configures server.
+// Starts an MQTT broker on the given port. Returns the server instance.
+func Start(port string) *mqtt.Server {
+	// Configures the broker server.
 	server := mqtt.NewServer(nil)
-	tcp := listeners.NewTCP("tcp1", ":1883")
+	tcp := listeners.NewTCP("tcp1", fmt.Sprintf(":%s", port))
 	err := server.AddListener(tcp, &listeners.Config{
 		Auth: new(auth.Allow),
 	})
@@ -45,28 +40,7 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
-	fmt.Println("Started!")
+	fmt.Println("Broker listening...")
 
-	// Waits for received cancel signal.
-	<-cancelSignal
-
-	server.Close()
-	fmt.Println("Finished")
-
-}
-
-// Listens for cancelling system signals.
-// Sends on the returned channel when a signal is received.
-func listenSignal() <-chan struct{} {
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	cancelSignal := make(chan struct{}, 1)
-	go func() {
-		<-sigs
-		fmt.Println("Caught signal")
-		cancelSignal <- struct{}{}
-	}()
-
-	return cancelSignal
+	return server
 }
