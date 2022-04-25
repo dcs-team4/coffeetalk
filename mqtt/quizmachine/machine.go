@@ -81,7 +81,8 @@ func IdleState(machine *QuizMachine) (nextState stm.StateID) {
 // Adds a new question to the machine's questions list, publishes it to the MQTT broker,
 // then waits 30 seconds before returning the Answer state as the next state.
 func QuestionState(machine *QuizMachine) (nextState stm.StateID) {
-	machine.questions = append(machine.questions, newQuestion())
+	// Adds a new question to the questions list.
+	machine.questions = append(machine.questions, newQuestion(machine.questions))
 
 	machine.broker.Publish(messages.QuestionTopic, []byte(machine.currentQuestion().Question), true)
 
