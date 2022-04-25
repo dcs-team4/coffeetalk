@@ -14,8 +14,8 @@ import (
 func Start(port string) *mqtt.Server {
 	// Configures the broker server.
 	server := mqtt.NewServer(nil)
-	tcp := listeners.NewTCP("tcp1", fmt.Sprintf(":%s", port))
-	err := server.AddListener(tcp, &listeners.Config{
+	socket := listeners.NewWebsocket("socket1", fmt.Sprintf(":%s", port))
+	err := server.AddListener(socket, &listeners.Config{
 		Auth: new(auth.Allow),
 	})
 	if err != nil {
