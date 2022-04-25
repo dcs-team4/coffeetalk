@@ -22,15 +22,9 @@ func Start(port string) *mqtt.Server {
 		log.Fatal(err)
 	}
 
-	// Logs new connections and messages.
+	// Logs new connections.
 	server.Events.OnConnect = func(client events.Client, packet events.Packet) {
 		log.Printf("%v connected!\n", client.ID)
-	}
-	server.Events.OnMessage = func(client events.Client, packet events.Packet) (
-		events.Packet, error,
-	) {
-		log.Printf("Message received on topic \"%v\"\n", packet.TopicName)
-		return packet, nil
 	}
 
 	// Starts the server in a new goroutine.
