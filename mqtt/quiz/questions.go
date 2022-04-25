@@ -1,4 +1,4 @@
-package quizmachine
+package quiz
 
 // The number of questions that should be asked in a quiz session before ending it.
 const maxQuestionCount = 5

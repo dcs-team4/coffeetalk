@@ -1,9 +1,8 @@
-package quizmachine
+package quiz
 
 import (
 	"time"
 
-	"github.com/dcs-team4/coffeetalk/mqtt/messages"
 	"github.com/dcs-team4/coffeetalk/stm"
 	mqtt "github.com/mochi-co/mqtt/server"
 )
@@ -84,7 +83,7 @@ func QuestionState(machine *QuizMachine) (nextState stm.StateID) {
 	// Adds a new question to the questions list.
 	machine.questions = append(machine.questions, newQuestion(machine.questions))
 
-	machine.broker.Publish(messages.QuestionTopic, []byte(machine.currentQuestion().Question), true)
+	machine.broker.Publish(QuestionTopic, []byte(machine.currentQuestion().Question), true)
 
 	go stm.SetTimer(30*time.Second, machine.questionTimer)
 	<-machine.questionTimer
@@ -95,12 +94,12 @@ func QuestionState(machine *QuizMachine) (nextState stm.StateID) {
 // its final question, ends the quiz and returns the Idle state; otherwise, waits 10 seconds and
 // then returns the Question state as the next state.
 func AnswerState(machine *QuizMachine) (nextState stm.StateID) {
-	machine.broker.Publish(messages.AnswerTopic, []byte(machine.currentQuestion().Answer), true)
+	machine.broker.Publish(AnswerTopic, []byte(machine.currentQuestion().Answer), true)
 
 	// If the quiz has reached its final question, sends the quiz end message,
 	// resets the quiz questions, and returns to the idle state.
 	if len(machine.questions) >= maxQuestionCount {
-		machine.broker.Publish(messages.QuizStatusTopic, []byte(messages.QuizEndMessage), true)
+		machine.broker.Publish(QuizStatusTopic, []byte(QuizEndMessage), true)
 		machine.questions = make([]Question, 0)
 		return idleState
 	}

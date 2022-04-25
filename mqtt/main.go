@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/dcs-team4/coffeetalk/mqtt/broker"
+	"github.com/dcs-team4/coffeetalk/mqtt/quiz"
 )
 
 func main() {
@@ -14,6 +15,11 @@ func main() {
 	fmt.Println("Starting server...")
 
 	broker := broker.Start("1883")
+
+	// Creates a new quiz machine, runs it in a goroutine, and listens for start messages.
+	quizmachine := quiz.New(broker)
+	go quizmachine.Run()
+	broker.Events.OnMessage = quizmachine.StartQuizHandler()
 
 	// Waits for received cancel signal.
 	<-cancelSignal

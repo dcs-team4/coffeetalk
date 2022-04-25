@@ -1,7 +1,7 @@
-package messages
+package quiz
 
 import (
-	mqtt "github.com/mochi-co/mqtt/server"
+	"github.com/dcs-team4/coffeetalk/stm"
 	"github.com/mochi-co/mqtt/server/events"
 )
 
@@ -24,24 +24,15 @@ const (
 	AnswerTopic string = "TTM4115/t4/quiz/a"
 )
 
-// Entry point of the quizmaster.
-// Listens to quiz-related messages on the given MQTT broker.
-func Listen(broker *mqtt.Server) {
-	broker.Events.OnMessage = quizStartHandler(broker)
-}
-
-// Returns a handler for listening to messages on the given MQTT broker.
-// Starts a quiz if the appropriate message is posted, otherwise does nothing.
-func quizStartHandler(broker *mqtt.Server) events.OnMessage {
+// Returns a handler for listening to MQTT messages.
+// When a start message is sent on the appropriate quiz topic,
+// triggers the Start event on the given quiz state machine.
+func (machine *QuizMachine) StartQuizHandler() events.OnMessage {
 	return func(client events.Client, packet events.Packet) (events.Packet, error) {
-		if packet.TopicName == QuizStatusTopic {
-			startQuiz(broker)
+		if packet.TopicName == QuizStatusTopic && string(packet.Payload) == QuizStartMessage {
+			machine.Start <- stm.Trigger{}
 		}
 
 		return packet, nil
 	}
-}
-
-func startQuiz(broker *mqtt.Server) {
-
 }
