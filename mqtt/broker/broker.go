@@ -10,14 +10,19 @@ import (
 	"github.com/mochi-co/mqtt/server/listeners/auth"
 )
 
-// Starts an MQTT broker on the given port in a separate goroutine, and returns the server instance.
-func Start(port string) *mqtt.Server {
+// Starts an MQTT broker that listens for WebSocket and TCP connections
+func Start(socketPort string, tcpPort string) *mqtt.Server {
 	// Configures the broker server.
 	server := mqtt.NewServer(nil)
-	socket := listeners.NewWebsocket("socket1", fmt.Sprintf(":%s", port))
-	err := server.AddListener(socket, &listeners.Config{
-		Auth: new(auth.Allow),
-	})
+
+	// Listens for WebSocket connections on the given socketPort.
+	socket := listeners.NewWebsocket("socket1", fmt.Sprintf(":%s", socketPort))
+	err := server.AddListener(socket, &listeners.Config{Auth: new(auth.Allow)})
+
+	// Listens for TCP connections on the given tcpPort.
+	tcp := listeners.NewTCP("tcp1", fmt.Sprintf(":%s", tcpPort))
+	err = server.AddListener(tcp, &listeners.Config{Auth: new(auth.Allow)})
+
 	if err != nil {
 		log.Fatal(err)
 	}
