@@ -37,6 +37,7 @@ const (
 var states = stm.States[*QuizMachine]{
 	idleState:     IdleState,
 	questionState: QuestionState,
+	answerState:   AnswerState,
 }
 
 // Returns a new quiz state machine, with all channels and lists initialized.
