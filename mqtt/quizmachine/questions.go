@@ -11,7 +11,7 @@ func (question Question) IsNone() bool {
 	return question.Question == ""
 }
 
-func getQuestion() Question {
+func newQuestion() Question {
 	return Question{
 		Question: "What is the meaning of life?",
 		Answer:   "42",

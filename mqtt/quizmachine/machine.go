@@ -8,23 +8,26 @@ import (
 	mqtt "github.com/mochi-co/mqtt/server"
 )
 
+// State machine for quiz sessions.
 type QuizMachine struct {
+	// Triggered to start a new quiz session.
 	Start stm.Event
 
-	post stm.Event
-
+	// Triggered when the time between question and answer has run out.
 	questionTimer stm.Event
 
+	// Triggered when the time between an answer and the next question has run out.
 	answerTimer stm.Event
 
-	questionCount int
+	// List of questions asked so far in the current quiz session.
+	questions []Question
 
-	currentQuestion Question
-
+	// The MQTT broker where questions and answers are to be published.
 	broker *mqtt.Server
 }
 
 // IDs of the quiz machine's states.
+// Uses iota for automatic enumeration (0, 1, 2...).
 const (
 	idleState stm.StateID = iota
 	questionState
@@ -40,8 +43,9 @@ var states = stm.States[*QuizMachine]{
 func New(broker *mqtt.Server) *QuizMachine {
 	return &QuizMachine{
 		Start:         make(stm.Event),
-		post:          make(stm.Event),
-		questionCount: 0,
+		questionTimer: make(stm.Event),
+		answerTimer:   make(stm.Event),
+		questions:     make([]Question, 0),
 		broker:        broker,
 	}
 }
@@ -54,6 +58,14 @@ func (machine *QuizMachine) Run() {
 	}
 }
 
+func (machine QuizMachine) currentQuestion() Question {
+	if len(machine.questions) == 0 {
+		return Question{}
+	}
+
+	return machine.questions[len(machine.questions)-1]
+}
+
 func IdleState(machine *QuizMachine) (nextState stm.StateID) {
 	// Waits for a start event, then returns the Question state as the next state.
 	<-machine.Start
@@ -61,10 +73,10 @@ func IdleState(machine *QuizMachine) (nextState stm.StateID) {
 }
 
 func QuestionState(machine *QuizMachine) (nextState stm.StateID) {
-	machine.currentQuestion = getQuestion()
+	machine.questions = append(machine.questions, newQuestion())
 
 	// Publishes the current question to the MQTT broker.
-	machine.broker.Publish(messages.QuestionTopic, []byte(machine.currentQuestion.Question), true)
+	machine.broker.Publish(messages.QuestionTopic, []byte(machine.currentQuestion().Question), true)
 
 	// Waits 30 seconds before showing the answer to the question.
 	go stm.SetTimer(30*time.Second, machine.questionTimer)
@@ -74,16 +86,13 @@ func QuestionState(machine *QuizMachine) (nextState stm.StateID) {
 
 func AnswerState(machine *QuizMachine) (nextState stm.StateID) {
 	// Publishes the answer to the current question on the MQTT broker.
-	machine.broker.Publish(messages.AnswerTopic, []byte(machine.currentQuestion.Answer), true)
-
-	machine.questionCount++
+	machine.broker.Publish(messages.AnswerTopic, []byte(machine.currentQuestion().Answer), true)
 
 	// If the quiz has reached its final question, sends the quiz end message,
-	// resets the quiz variables, and returns to the idle state.
-	if machine.questionCount >= maxQuestionCount {
+	// resets the quiz questions, and returns to the idle state.
+	if len(machine.questions) >= maxQuestionCount {
 		machine.broker.Publish(messages.QuizStatusTopic, []byte(messages.QuizEndMessage), true)
-		machine.currentQuestion = Question{}
-		machine.questionCount = 0
+		machine.questions = make([]Question, 0)
 		return idleState
 	}
 
@@ -91,32 +100,4 @@ func AnswerState(machine *QuizMachine) (nextState stm.StateID) {
 	go stm.SetTimer(10*time.Second, machine.answerTimer)
 	<-machine.answerTimer
 	return questionState
-}
-
-func (machine QuizMachine) Listen() {
-	started := false
-	questionCount := 0
-
-	for {
-		select {
-		case <-machine.Start:
-			if started {
-				break
-			}
-
-			started = true
-			machine.post <- stm.Trigger{}
-		case <-machine.post:
-			if !started {
-				break
-			}
-
-			if questionCount == maxQuestionCount {
-				started = false
-				break
-			}
-
-			questionCount++
-		}
-	}
 }
