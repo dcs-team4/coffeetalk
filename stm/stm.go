@@ -1,4 +1,4 @@
-// Package stm provides utility types for creating state machines in Go.
+// Package stm provides utility types and functions for setting up state machines in Go.
 package stm
 
 import "time"
@@ -11,7 +11,7 @@ type Machine interface {
 }
 
 // Uniquely identifies a state in a state machine.
-// Typically used with iota constants for easy enumeration.
+// Typically used with iota for easy enumeration.
 type StateID int
 
 // A function to run to represent a state.
