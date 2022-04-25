@@ -1,8 +1,6 @@
 package quiz
 
 import (
-	"time"
-
 	"github.com/dcs-team4/coffeetalk/stm"
 	mqtt "github.com/mochi-co/mqtt/server"
 )
@@ -86,7 +84,7 @@ func QuestionState(machine *QuizMachine) (nextState stm.StateID) {
 
 	machine.broker.Publish(QuestionTopic, []byte(machine.currentQuestion().Question), true)
 
-	go stm.SetTimer(30*time.Second, machine.questionTimer)
+	go stm.SetTimer(questionDuration, machine.questionTimer)
 	<-machine.questionTimer
 	return answerState
 }
@@ -105,7 +103,7 @@ func AnswerState(machine *QuizMachine) (nextState stm.StateID) {
 		return idleState
 	}
 
-	go stm.SetTimer(10*time.Second, machine.answerTimer)
+	go stm.SetTimer(answerDuration, machine.answerTimer)
 	<-machine.answerTimer
 	return questionState
 }

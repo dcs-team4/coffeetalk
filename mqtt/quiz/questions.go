@@ -5,18 +5,24 @@ import (
 	"encoding/json"
 	"log"
 	"math/rand"
+	"time"
 )
 
 // Embedded file with a list of questions.
 //go:embed questions.json
 var questionsJson []byte
 
-// Global list of questions.
-// If empty, should be populated with questionsJson.
+// Global list of questions. Should be populated with questionsJson if empty.
 var questions = make([]Question, 0)
 
 // The number of questions that should be asked in a quiz session before ending it.
 const maxQuestionCount = 5
+
+// Time to wait before moving between question, answer and next question.
+const (
+	questionDuration = 30 * time.Second
+	answerDuration   = 10 * time.Second
+)
 
 // Questions and corresponding answers that make up the quiz.
 // Includes an ID to check for question uniqueness, and json tags for reading from file.
