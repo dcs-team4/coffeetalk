@@ -11,35 +11,22 @@ import (
 )
 
 func main() {
-	cancelSignal := listenSignal()
-	fmt.Println("Starting server...")
+	cancelSignal := make(chan os.Signal, 1)
+	signal.Notify(cancelSignal, syscall.SIGINT, syscall.SIGTERM)
 
-	broker := broker.Start("1883")
+	port := "1883"
+	broker := broker.Start(port)
+	fmt.Printf("Running MQTT broker on port %v...\n", port)
 
 	// Creates a new quiz machine, runs it in a goroutine, and listens for start messages.
-	quizmachine := quiz.New(broker)
+	quizmachine := quiz.NewMachine(broker)
 	go quizmachine.Run()
 	broker.Events.OnMessage = quizmachine.StartQuizHandler()
+	fmt.Println("Running quiz machine...")
 
 	// Waits for received cancel signal.
 	<-cancelSignal
 
 	broker.Close()
-	fmt.Println("Finished")
-}
-
-// Listens for cancelling system signals.
-// Sends on the returned channel when a signal is received.
-func listenSignal() <-chan struct{} {
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	cancelSignal := make(chan struct{}, 1)
-	go func() {
-		<-sigs
-		fmt.Println("Caught signal")
-		cancelSignal <- struct{}{}
-	}()
-
-	return cancelSignal
+	fmt.Println("Server closed")
 }
