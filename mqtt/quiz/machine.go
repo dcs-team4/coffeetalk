@@ -40,7 +40,7 @@ var states = stm.States[*QuizMachine]{
 
 // Returns a new quiz state machine, with all channels and lists initialized.
 // Attaches the given broker to the machine, and assumes it is valid to send on.
-func New(broker *mqtt.Server) *QuizMachine {
+func NewMachine(broker *mqtt.Server) *QuizMachine {
 	return &QuizMachine{
 		Start:         make(stm.Event),
 		questionTimer: make(stm.Event),
