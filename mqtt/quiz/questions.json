@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "question": "What is the meaning of life?",
+    "answer": "42"
+  },
+  {
+    "id": 2,
+    "question": "What is the capitol of Mongolia?",
+    "answer": "Ulaanbaataar"
+  },
+  {
+    "id": 3,
+    "question": "What is the capitol of Slovenia?",
+    "answer": "Ljubljana"
+  },
+  {
+    "id": 4,
+    "question": "What is man's best friend?",
+    "answer": "Dogs"
+  },
+  {
+    "id": 5,
+    "question": "What quote (in English) is attributed to Julius Caesar as he crossed the Rubicon?",
+    "answer": "The die is cast"
+  }
+]
