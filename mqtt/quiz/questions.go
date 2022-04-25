@@ -64,4 +64,12 @@ func readQuestions() {
 	if err != nil {
 		log.Fatal("failed to read questions.json")
 	}
+
+	if len(questions) < maxQuestionCount {
+		log.Fatalf(
+			"too few configured questions; have %v, want %v\n",
+			len(questions),
+			maxQuestionCount,
+		)
+	}
 }
