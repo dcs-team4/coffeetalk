@@ -65,6 +65,7 @@ func readQuestions() {
 		log.Fatal("failed to read questions.json")
 	}
 
+	// Crashes if too few questions are configured.
 	if len(questions) < maxQuestionCount {
 		log.Fatalf(
 			"too few configured questions; have %v, want %v\n",

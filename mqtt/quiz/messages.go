@@ -1,6 +1,8 @@
 package quiz
 
 import (
+	"log"
+
 	"github.com/dcs-team4/coffeetalk/stm"
 	"github.com/mochi-co/mqtt/server/events"
 )
@@ -29,6 +31,12 @@ const (
 // triggers the Start event on the given quiz state machine.
 func (machine *QuizMachine) StartQuizHandler() events.OnMessage {
 	return func(client events.Client, packet events.Packet) (events.Packet, error) {
+		log.Printf(
+			"Message received (topic: %v, message: %v)\n",
+			packet.TopicName,
+			string(packet.Payload),
+		)
+
 		if packet.TopicName == QuizStatusTopic && string(packet.Payload) == QuizStartMessage {
 			machine.Start <- stm.Trigger{}
 		}
