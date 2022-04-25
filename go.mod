@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/mochi-co/mqtt v1.2.1
+	hermannm.dev/ipfinder v0.1.0
 )
 
 require (
