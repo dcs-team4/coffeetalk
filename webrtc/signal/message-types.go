@@ -17,7 +17,7 @@ type BaseMessage struct {
 	Type string `json:"type"`
 }
 
-// Utility struct to embed in messages are to be sent directly from one user to another.
+// Utility struct to embed in messages that are to be sent directly from one user to another.
 type TargetedMessage struct {
 	// Username of sender.
 	From string `json:"from"`
@@ -26,8 +26,8 @@ type TargetedMessage struct {
 	To string `json:"to"`
 }
 
-// Message sent between two clients when initiating a stream between each other.
-type SDPExchangeMessage struct {
+// Message sent between two clients when initiating a video stream between each other.
+type VideoExchangeMessage struct {
 	BaseMessage     // Type: MsgVideoOffer/MsgVideoAnswer.
 	TargetedMessage // Sender and receiver of video offer/answer.
 
@@ -36,14 +36,14 @@ type SDPExchangeMessage struct {
 	SDP string `json:"sdp"`
 }
 
-// Message sent between two clients when initiating a stream between each other.
-type ICEExchangeMessage struct {
+// The ICE (Interactive Connectivity Establishment) protocol is used to negotiate the connection
+// between two peers. This message allows clients to exchange ICE candidates between each other.
+type ICECandidateMessage struct {
 	BaseMessage     // Type: MsgICECandidate.
 	TargetedMessage // Sender and receiver of ICE candidate.
 
-	// The ICE (Interactive Connectivity Establishment) protocol is used to negotiate the connection
-	// between two peers. This message allows clients to exchange ICE candidates between each other.
-	ICECandidate string `json:"iceCandidate"`
+	// SDP (Session Description Protocol) candidate string for ICE negotation.
+	Candidate string `json:"candidate"`
 }
 
 // Message sent from server to client when a received message causes an error.

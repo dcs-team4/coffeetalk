@@ -7,44 +7,50 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Forever listens for WebSocket messages from the given user.
+// Forever listens for WebSocket messages from the given user, and forwards them to HandleMessage.
 func (user *User) Listen() {
 	for {
-		_, rawMessage, err := user.Socket.ReadMessage()
+		_, message, err := user.Socket.ReadMessage()
 		if err != nil {
 			log.Printf("Could not read message: %v\n", err)
 			continue
 		}
 
-		var baseMessage BaseMessage
-		err = json.Unmarshal(rawMessage, &baseMessage)
-
-		user.HandleMessage(baseMessage, rawMessage)
+		user.HandleMessage(message)
 	}
 }
 
-// Handles messages from the given user. Takes a base message for checking the message's type,
-// and the raw message for potential further deserialization.
-func (user *User) HandleMessage(baseMessage BaseMessage, rawMessage []byte) {
+// Handles the incoming message from the given user.
+func (user *User) HandleMessage(rawMessage []byte) {
+	// First deserializes the message to a BaseMessage for checking its message type.
+	var baseMessage BaseMessage
+	err := json.Unmarshal(rawMessage, &baseMessage)
+	if err != nil {
+		errMsg := "Invalid message"
+		user.Socket.WriteJSON(NewErrorMessage(errMsg))
+		log.Printf("%v: %v\n", errMsg, err)
+		return
+	}
+
 	switch baseMessage.Type {
 	case MsgVideoOffer:
 		// Falls through to the next case, as video offer and answer messages are handled the same.
 		fallthrough
 	case MsgVideoAnswer:
-		// Deserializes the message to an SDP exchange message.
-		var sdpExchange SDPExchangeMessage
-		if !DeserializeMsg(rawMessage, &sdpExchange, user) {
+		// Deserializes the message to a video exchange message.
+		var videoExchange VideoExchangeMessage
+		if !DeserializeMsg(rawMessage, &videoExchange, user) {
 			return
 		}
 
 		// Validates the message.
-		target, ok := sdpExchange.Validate(user)
+		target, ok := videoExchange.Validate(user)
 		if !ok {
 			return
 		}
 
 		// Forwards the video offer message to the intended target.
-		target.WriteJSON(sdpExchange)
+		target.WriteJSON(videoExchange)
 	case MsgJoinStream:
 		user.Lock.Lock()
 		user.InStream = true
