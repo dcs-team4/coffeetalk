@@ -3,11 +3,21 @@ package signal
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"sync"
 
 	"github.com/gorilla/websocket"
 )
+
+func StartServer(port string) {
+	http.HandleFunc("/connect", connectSocket)
+
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 // HTTP handler for establishing a WebSocket connection to the server.
 func connectSocket(res http.ResponseWriter, req *http.Request) {
