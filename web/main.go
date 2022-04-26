@@ -14,16 +14,11 @@ const webServerPort = "3000"
 var publicFolder embed.FS
 
 func main() {
-	// Exposes the files inside the "public" folder.
-	public, err := fs.Sub(publicFolder, "public")
-	if err != nil {
-		log.Fatal(err)
-	}
+	// Serves the HTML/CSS/JavaScript files inside the "public" folder from the root URL.
+	publicFiles, _ := fs.Sub(publicFolder, "public")
+	http.Handle("/", http.FileServer(http.FS(publicFiles)))
 
-	// Serves the files inside the "public" folder from the root URL.
-	http.Handle("/", http.FileServer(http.FS(public)))
-
-	err = http.ListenAndServe(":"+webServerPort, nil)
+	err := http.ListenAndServe(":"+webServerPort, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
