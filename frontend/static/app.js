@@ -17,17 +17,28 @@ let connected = false;
 let room;
 
 
-
-var client = new Paho.MQTT.Client('test.mosquitto.org', 8080, "5dc8b26287094cf6sa9a30kcd5eae3cd539");
+const port = 8080;
+console.log(port);
+var client = new Paho.MQTT.Client("10.22.77.147", 8080, "client");
 client.connect({
     onSuccess:function(){
         console.log("connected");
         client.subscribe('TTM4115/t4/quiz/#');
-    }
+    },
+    onFailure: () => { console.log("failure") }
 });
+
+client.onConnected = () => {
+    console.log("actually connected")
+}
+client.onConnectionLost = () => {
+    console.log("connection lost");
+}
 
 //Function on what to do when a new message arrives from mqtt
 client.onMessageArrived = function(message){
+    console.log(connected);
+    console.log(message);
     if(connected){                                                   //If the client is not connected to the stream, nothing happens
         if(message.destinationName == "TTM4115/t4/quiz/q"){          //If the message is questions
             questions.innerHTML = message.payloadString;
