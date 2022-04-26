@@ -4,6 +4,9 @@ import (
 	"github.com/dcs-team4/coffeetalk/webrtc/signals"
 )
 
+const signalingServerPort = "8000"
+
 func main() {
-	signals.StartServer("8000")
+	// Starts the WebRTC signaling server.
+	signals.StartServer(signalingServerPort)
 }

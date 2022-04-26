@@ -8,28 +8,24 @@ import (
 
 	"github.com/dcs-team4/coffeetalk/mqtt/broker"
 	"github.com/dcs-team4/coffeetalk/mqtt/quiz"
-	"hermannm.dev/ipfinder"
+)
+
+// Ports for the MQTT broker.
+const (
+	socketPort = "1882"
+	tcpPort    = "1883"
 )
 
 func main() {
+	// Sets up channel to keep running the server until a cancel signal is received.
 	cancelSignal := make(chan os.Signal, 1)
 	signal.Notify(cancelSignal, syscall.SIGINT, syscall.SIGTERM)
 
-	socketPort := "8080"
-	tcpPort := "1883"
+	// Starts MQTT broker.
 	broker := broker.Start(socketPort, tcpPort)
-	fmt.Printf("Running MQTT broker (TCP port: %v, WebSocket port: %v)\n", tcpPort, socketPort)
+	fmt.Printf("Running MQTT broker on port %v (WebSocket) and %v (TCP)...\n", socketPort, tcpPort)
 
-	localIPs, err := ipfinder.FindLocalIPs()
-	if err == nil {
-		for network, ips := range localIPs {
-			for _, ip := range ips {
-				fmt.Printf("IP: (%v) %v\n", network, ip)
-			}
-		}
-	}
-
-	// Creates a new quiz machine, runs it in a goroutine, and listens for start messages.
+	// Creates a new quiz state machine, runs it in a goroutine, and listens for start messages.
 	quizmachine := quiz.NewMachine(broker)
 	go quizmachine.Run()
 	broker.Events.OnMessage = quizmachine.StartQuizHandler()
