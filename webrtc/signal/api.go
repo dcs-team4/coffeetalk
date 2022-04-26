@@ -15,7 +15,6 @@ func connectSocket(res http.ResponseWriter, req *http.Request) {
 	var body struct {
 		Username string `json:"username"`
 	}
-
 	data, err := io.ReadAll(req.Body)
 	err = json.Unmarshal(data, &body)
 	if err != nil {
@@ -47,6 +46,7 @@ func connectSocket(res http.ResponseWriter, req *http.Request) {
 	}
 
 	user := &User{
+		Name:     username,
 		Socket:   socket,
 		InStream: false,
 		Lock:     new(sync.RWMutex),
