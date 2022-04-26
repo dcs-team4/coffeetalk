@@ -1,3 +1,4 @@
+// Package broker wraps around the mochi-co/mqtt library to set up an MQTT broker.
 package broker
 
 import (
