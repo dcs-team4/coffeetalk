@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// Starts a WebRTC signaling server on the given port.
 func StartServer(port string) {
 	http.HandleFunc("/connect", connectSocket)
 
