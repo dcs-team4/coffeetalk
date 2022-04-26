@@ -51,6 +51,21 @@ func (user *User) HandleMessage(rawMessage []byte) {
 
 		// Forwards the video offer message to the intended target.
 		target.WriteJSON(videoExchange)
+	case MsgICECandidate:
+		// Deserializes the message to an ICE candidate message.
+		var iceCandidate ICECandidateMessage
+		if !DeserializeMsg(rawMessage, &iceCandidate, user) {
+			return
+		}
+
+		// Validates the message.
+		target, ok := iceCandidate.Validate(user)
+		if !ok {
+			return
+		}
+
+		// Forwards the ICE candidate message to the intended target.
+		target.WriteJSON(iceCandidate)
 	case MsgJoinStream:
 		user.Lock.Lock()
 		user.InStream = true
