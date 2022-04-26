@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/dcs-team4/coffeetalk/webrtc/signal"
+	"github.com/dcs-team4/coffeetalk/webrtc/signals"
 )
 
 func main() {
-	signal.StartServer("8000")
+	signals.StartServer("8000")
 }

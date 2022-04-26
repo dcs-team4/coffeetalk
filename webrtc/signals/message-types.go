@@ -1,4 +1,4 @@
-package signal
+package signals
 
 // Message types allowed to and from this server.
 const (
