@@ -36,7 +36,7 @@ type Event chan Trigger
 
 // Utility function for setting a timer and triggering the given state machine event on expiry.
 // Typically run in a goroutine, to later listen on the event.
-func SetTimer(t time.Duration, event Event) {
-	time.Sleep(t)
+func SetTimer(duration time.Duration, event Event) {
+	time.Sleep(duration)
 	event <- Trigger{}
 }
