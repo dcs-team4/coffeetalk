@@ -1,7 +1,9 @@
 // Package stm provides utility types and functions for setting up state machines in Go.
 package stm
 
-import "time"
+import (
+	"time"
+)
 
 // A state machine can be essentially any type, up to the implementer.
 type Machine interface {
