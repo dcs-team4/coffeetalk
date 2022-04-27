@@ -76,23 +76,29 @@ func IdleState(machine *QuizMachine) (nextState stm.StateID) {
 	return questionState
 }
 
-// Adds a new question to the machine's questions list, publishes it to the MQTT broker,
-// then waits 30 seconds before returning the Answer state as the next state.
+// Adds a new question to the machine's questions list, publishes it to the MQTT broker, then waits
+// for the question timer event before returning the Answer state as the next state.
 func QuestionState(machine *QuizMachine) (nextState stm.StateID) {
 	// Adds a new question to the questions list.
 	machine.questions = append(machine.questions, newQuestion(machine.questions))
 
+	// Publishes the current question to the MQTT broker.
 	machine.broker.Publish(QuestionTopic, []byte(machine.currentQuestion().Question), true)
 
+	// Sets a timer to trigger the question timer event.
 	go stm.SetTimer(questionDuration, machine.questionTimer)
+
+	// Waits for the question timer event.
 	<-machine.questionTimer
+
 	return answerState
 }
 
 // Publishes the answer to the previous question to the MQTT broker. Then, if the quiz has reached
-// its final question, ends the quiz and returns the Idle state; otherwise, waits 10 seconds and
-// then returns the Question state as the next state.
+// its final question, ends the quiz and returns the Idle state; otherwise, waits for the answer
+// timer event before returning the Question state as the next state.
 func AnswerState(machine *QuizMachine) (nextState stm.StateID) {
+	// Publishes the answer to the current question to the MQTT broker.
 	machine.broker.Publish(AnswerTopic, []byte(machine.currentQuestion().Answer), true)
 
 	// If the quiz has reached its final question, sends the quiz end message,
@@ -103,7 +109,11 @@ func AnswerState(machine *QuizMachine) (nextState stm.StateID) {
 		return idleState
 	}
 
+	// Sets a timer to trigger the answer timer event.
 	go stm.SetTimer(answerDuration, machine.answerTimer)
+
+	// Waits for the answer timer event.
 	<-machine.answerTimer
+
 	return questionState
 }
