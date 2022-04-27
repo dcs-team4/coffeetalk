@@ -2,7 +2,6 @@
 package broker
 
 import (
-	"fmt"
 	"log"
 
 	mqtt "github.com/mochi-co/mqtt/server"
@@ -17,11 +16,11 @@ func Start(socketPort string, tcpPort string) *mqtt.Server {
 	server := mqtt.NewServer(nil)
 
 	// Listens for WebSocket connections on the given socketPort.
-	socket := listeners.NewWebsocket("socket1", fmt.Sprintf(":%s", socketPort))
+	socket := listeners.NewWebsocket("socket1", ":"+socketPort)
 	err := server.AddListener(socket, &listeners.Config{Auth: new(auth.Allow)})
 
 	// Listens for TCP connections on the given tcpPort.
-	tcp := listeners.NewTCP("tcp1", fmt.Sprintf(":%s", tcpPort))
+	tcp := listeners.NewTCP("tcp1", ":"+tcpPort)
 	err = server.AddListener(tcp, &listeners.Config{Auth: new(auth.Allow)})
 
 	if err != nil {
@@ -40,7 +39,6 @@ func Start(socketPort string, tcpPort string) *mqtt.Server {
 			log.Fatal(err)
 		}
 	}()
-	fmt.Println("Broker listening...")
 
 	return server
 }
