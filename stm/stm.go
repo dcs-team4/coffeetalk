@@ -2,6 +2,7 @@
 package stm
 
 import (
+	"log"
 	"time"
 )
 
@@ -47,7 +48,16 @@ func RunMachine[Machine StateMachine[Machine]](machine Machine, startState State
 	currentState := startState
 
 	for {
-		currentStateFunc := machine.States()[currentState]
+		// Gets the state function for the current state from the machine's state configuration.
+		currentStateFunc, ok := machine.States()[currentState]
+
+		// If state function is not configured, logs warning and breaks the loop.
+		if !ok {
+			log.Printf("Missing state machine function for StateID %v!\n", currentState)
+			break
+		}
+
+		// Runs the state function, and sets its returned next state as the new current state.
 		currentState = currentStateFunc(machine)
 	}
 }
