@@ -6,7 +6,11 @@ import (
 )
 
 // State machine for quiz sessions.
+// Implements stm.StateMachine.
 type QuizMachine struct {
+	// Map of quiz machine state IDs to the functions that should run for those states.
+	states stm.States[*QuizMachine]
+
 	// Triggered to start a new quiz session.
 	Start stm.Event
 
@@ -31,17 +35,15 @@ const (
 	answerState
 )
 
-// Map of quiz machine state IDs to the functions that should run for those states.
-var states = stm.States[*QuizMachine]{
-	idleState:     IdleState,
-	questionState: QuestionState,
-	answerState:   AnswerState,
-}
-
-// Returns a new quiz state machine, with all channels and lists initialized.
+// Returns a new quiz state machine, with all states, channels and lists initialized.
 // Attaches the given broker to the machine, and assumes it is valid to send on.
 func NewMachine(broker *mqtt.Server) *QuizMachine {
 	return &QuizMachine{
+		states: stm.States[*QuizMachine]{
+			idleState:     IdleState,
+			questionState: QuestionState,
+			answerState:   AnswerState,
+		},
 		Start:         make(stm.Event),
 		questionTimer: make(stm.Event),
 		answerTimer:   make(stm.Event),
@@ -50,14 +52,16 @@ func NewMachine(broker *mqtt.Server) *QuizMachine {
 	}
 }
 
+// Returns the quiz machine's configured states.
+func (machine *QuizMachine) States() stm.States[*QuizMachine] {
+	return machine.states
+}
+
 // Runs the given quiz state machine. Keeps running through every configured state function,
 // transitioning to new states as they return.
 func (machine *QuizMachine) Run() {
-	currentState := idleState
-
-	for {
-		currentState = states[currentState](machine)
-	}
+	startState := idleState
+	stm.RunMachine(machine, startState)
 }
 
 // Gets the latest question to process in the quiz session.

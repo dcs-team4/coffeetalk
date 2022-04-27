@@ -5,10 +5,15 @@ import (
 	"time"
 )
 
-// A state machine can be essentially any type, up to the implementer.
-type Machine interface {
-	// Executes the state machine.
-	// Typically runs a StateFunc given by the States map.
+// A state machine is a type with a configured set of states with corresponding state functions,
+// and a method for running the machine.
+// The type parameter here is to avoid self-reference, but typically points back to the implementer.
+type StateMachine[Machine any] interface {
+	// Returns the configured states for this state machine.
+	States() States[Machine]
+
+	// Manages the machine's states, and executes its state functions.
+	// Typically calls the RunMachine function provided by this package.
 	Run()
 }
 
@@ -16,14 +21,14 @@ type Machine interface {
 // Typically used with iota for easy enumeration.
 type StateID int
 
-// A function to run to represent a state.
+// A function to run when in a given state.
 // Takes a type parameter for the type of state machine to execute on.
 // Typically keeps running until some event is triggered, upon which it returns the next state.
-type StateFunc[M Machine] func(machine M) (nextState StateID)
+type StateFunc[Machine any] func(machine Machine) (nextState StateID)
 
 // A map of possible states for a state machine.
 // Takes a type parameter for the type of state machine to attach to.
-type States[M Machine] map[StateID]StateFunc[M]
+type States[Machine any] map[StateID]StateFunc[Machine]
 
 // A signal that may trigger a change in a state machine, typically caused by outside input.
 // Implemented as an empty struct in order to take 0 space.
@@ -33,6 +38,19 @@ type Trigger struct{}
 // Implemented as a channel, to allow for concurrent communication with the state machine,
 // and listening for the event.
 type Event chan Trigger
+
+// Utility function for running a state machine.
+// Keeps running every configured state function (starting with the given startState),
+// and transitions to new states as they return.
+// The type parameter constraint ensures that the machine has states configured.
+func RunMachine[Machine StateMachine[Machine]](machine Machine, startState StateID) {
+	currentState := startState
+
+	for {
+		currentStateFunc := machine.States()[currentState]
+		currentState = currentStateFunc(machine)
+	}
+}
 
 // Utility function for setting a timer and triggering the given state machine event on expiry.
 // Typically run in a goroutine, to later listen on the event.
