@@ -11,7 +11,7 @@ import (
 	"github.com/mochi-co/mqtt/server/listeners/auth"
 )
 
-// Starts an MQTT broker that listens for WebSocket and TCP connections
+// Starts an MQTT broker that listens for WebSocket and TCP connections on the given ports.
 func Start(socketPort string, tcpPort string) *mqtt.Server {
 	// Configures the broker server.
 	server := mqtt.NewServer(nil)
