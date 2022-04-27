@@ -43,7 +43,7 @@ type Event chan Trigger
 // Utility function for running a state machine.
 // Keeps running every configured state function (starting with the given startState),
 // and transitions to new states as they return.
-// The type parameter constraint ensures that the machine has states configured.
+// The type parameter constraint ensures that the machine configures states for itself.
 func RunMachine[Machine StateMachine[Machine]](machine Machine, startState StateID) {
 	currentState := startState
 
