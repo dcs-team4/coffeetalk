@@ -2,16 +2,15 @@
 <html>
   <head>
     <link rel="stylesheet" href="style.css" />
-    <script type="module" src="./stream.js"></script>
+    <script type="module" src="./scripts/index.js"></script>
   </head>
   <body>
     <div class="container">
       <div class="flexChild" id="camera-container">
         <div id="video-container" class="camera-box">
-          <video id="received_video" autoplay></video>
-          <video id="local_video" autoplay muted></video>
-          <button id="hangup-button" disabled>Hang Up</button>
+          <video id="local-video" autoplay muted></video>
         </div>
+        <button id="hangup-button" disabled>Hang Up</button>
       </div>
     </div>
   </body>
