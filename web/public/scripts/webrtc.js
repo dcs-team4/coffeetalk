@@ -11,6 +11,9 @@ import { messages, sendToServer } from "./socket.js";
 /** @type {{ [key: string]: Peer }} */
 const peers = {};
 
+const videoContainer = document.getElementById("video-container");
+const localVideo = /** @type {HTMLVideoElement} */ (document.getElementById("local-video"));
+
 const mediaConstraints = {
   audio: true,
   video: true,
@@ -27,7 +30,7 @@ export async function sendVideoOffer(peerName) {
     return;
   }
 
-  /** @type {HTMLVideoElement} */ (document.getElementById("local_video")).srcObject = stream;
+  localVideo.srcObject = stream;
   for (const track of stream.getTracks()) {
     peer.connection.addTrack(track, stream);
   }
@@ -49,7 +52,7 @@ export async function receiveVideoOffer(message) {
     return;
   }
 
-  /** @type {HTMLVideoElement} */ (document.getElementById("local_video")).srcObject = stream;
+  localVideo.srcObject = stream;
 
   for (const track of stream.getTracks()) {
     peer.connection.addTrack(track, stream);
