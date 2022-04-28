@@ -2,19 +2,25 @@
 
 import { receiveICECandidate, receiveVideoOffer } from "./webrtc";
 
-const connectAddress = "ws://localhost:8000/connect";
+const socketPort = "8000";
 
 /** @type {WebSocket | undefined} */
 let socket;
 
-export function initializeSocket() {
-  socket = new WebSocket(connectAddress);
+export function connectSocket() {
+  let protocol = "ws";
+  if (location.protocol === "https:") {
+    protocol = "wss";
+  }
+  const serverURL = `${protocol}://${location.hostname}:${socketPort}`;
+
+  socket = new WebSocket(serverURL);
   socket.addEventListener("message", handleMessage);
 }
 
 export function sendToServer(message) {
   const serialized = JSON.stringify(message);
-  socket?.send(serialized);
+  socket.send(serialized);
 }
 
 export const messages = Object.freeze({
