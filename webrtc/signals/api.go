@@ -12,7 +12,7 @@ import (
 
 // Starts a WebRTC signaling server on the given port.
 func StartServer(port string) {
-	http.HandleFunc("/connect", connectSocket)
+	http.HandleFunc("/", connectSocket)
 
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
