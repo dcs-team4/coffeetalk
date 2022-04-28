@@ -3,7 +3,13 @@
 import * as messages from "./messages.js";
 import { sendToServer } from "./socket.js";
 
-/** @type {{ [key: string]: RTCPeerConnection }} */
+/**
+ * @typedef {Object} Peer
+ * @property {RTCPeerConnection} connection
+ * @property {HTMLVideoElement} [video]
+ */
+
+/** @type {{ [key: string]: Peer }} */
 const peers = {};
 
 const mediaConstraints = {
@@ -24,7 +30,7 @@ export async function sendVideoOffer(peerName) {
 
   /** @type {HTMLVideoElement} */ (document.getElementById("local_video")).srcObject = stream;
   for (const track of stream.getTracks()) {
-    peer.addTrack(track, stream);
+    peer.connection.addTrack(track, stream);
   }
 }
 
@@ -34,7 +40,7 @@ export async function receiveVideoOffer(message) {
   const peer = createPeerConnection(sender);
 
   const session = new RTCSessionDescription(sdp);
-  await peer.setRemoteDescription(session);
+  await peer.connection.setRemoteDescription(session);
 
   let stream;
   try {
@@ -47,12 +53,12 @@ export async function receiveVideoOffer(message) {
   /** @type {HTMLVideoElement} */ (document.getElementById("local_video")).srcObject = stream;
 
   for (const track of stream.getTracks()) {
-    peer.addTrack(track, stream);
+    peer.connection.addTrack(track, stream);
   }
 
   try {
-    const answer = await peer.createAnswer();
-    await peer.setLocalDescription(answer);
+    const answer = await peer.connection.createAnswer();
+    await peer.connection.setLocalDescription(answer);
   } catch (error) {
     console.log(error);
     return;
@@ -61,7 +67,7 @@ export async function receiveVideoOffer(message) {
   sendToServer({
     type: messages.VIDEO_ANSWER,
     to: sender,
-    sdp: peer.localDescription,
+    sdp: peer.connection.localDescription,
   });
 }
 
@@ -72,28 +78,31 @@ export async function receiveICECandidate(message) {
   if (!peer) return;
 
   try {
-    await peer.addIceCandidate(candidate);
+    await peer.connection.addIceCandidate(candidate);
   } catch (error) {
     console.log(error);
   }
 }
 
+/** @returns {Peer} */
 export function createPeerConnection(peerName) {
-  const peer = new RTCPeerConnection({
-    iceServers: [
-      {
-        // Open source STUN service (https://www.stunprotocol.org/)
-        urls: "stun:stun.stunprotocol.org",
-      },
-    ],
-  });
+  const peer = {
+    connection: new RTCPeerConnection({
+      iceServers: [
+        {
+          // Open source STUN service (https://www.stunprotocol.org/)
+          urls: "stun:stun.stunprotocol.org",
+        },
+      ],
+    }),
+  };
 
-  peer.onicecandidate = (event) => handleICECandidate(peer, peerName, event);
-  peer.ontrack = () => handleTrack(peer);
-  peer.onnegotiationneeded = () => handleNegotiationNeeded(peer, peerName);
-  peer.oniceconnectionstatechange = () => handleICEConnectionStateChange(peer);
-  peer.onicegatheringstatechange = () => handleICEGatheringStateChange(peer);
-  peer.onsignalingstatechange = () => handleSignalingStateChange(peer);
+  peer.connection.onicecandidate = (event) => handleICECandidate(peerName, event);
+  peer.connection.ontrack = () => handleTrack(peer);
+  peer.connection.onnegotiationneeded = () => handleNegotiationNeeded(peer, peerName);
+  peer.connection.oniceconnectionstatechange = () => handleICEConnectionStateChange(peer);
+  peer.connection.onicegatheringstatechange = () => handleICEGatheringStateChange(peer);
+  peer.connection.onsignalingstatechange = () => handleSignalingStateChange(peer);
 
   peers[peerName] = peer;
 
@@ -101,11 +110,10 @@ export function createPeerConnection(peerName) {
 }
 
 /**
- * @param {RTCPeerConnection} peer
  * @param {string} peerName
  * @param {RTCPeerConnectionIceEvent} event
  */
-function handleICECandidate(peer, peerName, event) {
+function handleICECandidate(peerName, event) {
   if (event.candidate) {
     sendToServer({
       type: messages.ICE_CANDIDATE,
@@ -115,13 +123,11 @@ function handleICECandidate(peer, peerName, event) {
   }
 }
 
-function handleTrack(peer) {}
-
-/** @param {RTCPeerConnection} peer */
+/** @param {Peer} peer */
 async function handleNegotiationNeeded(peer, peerName) {
   try {
-    const offer = await peer.createOffer();
-    await peer.setLocalDescription(offer);
+    const offer = await peer.connection.createOffer();
+    await peer.connection.setLocalDescription(offer);
   } catch (error) {
     console.log(error);
     return;
@@ -130,9 +136,11 @@ async function handleNegotiationNeeded(peer, peerName) {
   sendToServer({
     type: messages.VIDEO_OFFER,
     to: peerName,
-    sdp: peer.localDescription,
+    sdp: peer.connection.localDescription,
   });
 }
+
+function handleTrack(peer) {}
 
 function handleICEConnectionStateChange(peer) {}
 
