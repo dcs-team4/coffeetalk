@@ -65,6 +65,19 @@ export async function receiveVideoOffer(message) {
   });
 }
 
+export async function receiveICECandidate(message) {
+  const candidate = new RTCIceCandidate(message.sdp);
+
+  const peer = peers[message.from];
+  if (!peer) return;
+
+  try {
+    await peer.addIceCandidate(candidate);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 export function createPeerConnection(peerName) {
   const peer = new RTCPeerConnection({
     iceServers: [
