@@ -1,7 +1,6 @@
 //@ts-check
 
-import * as messages from "./messages.js";
-import { sendToServer } from "./socket.js";
+import { messages, sendToServer } from "./socket.js";
 
 /**
  * @typedef {Object} Peer
