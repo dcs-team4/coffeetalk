@@ -1,3 +1,5 @@
+//@ts-check
+
 export const VIDEO_OFFER = "video-offer";
 export const VIDEO_ANSWER = "video-answer";
 export const ICE_CANDIDATE = "new-ice-candidate";

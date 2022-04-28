@@ -1,3 +1,7 @@
+//@ts-check
+
+let username;
+
 export function getUsername() {
   if (username) {
     return { username, ok: true };
