@@ -8,26 +8,24 @@ const messageTypes = Object.freeze({
   error: "error",
 });
 
-export function videoOfferMessage(to, sdp) {
+function videoExchangeMessage(message) {
   const { username, ok } = getUsername();
   if (!ok) return undefined;
 
   return {
-    type: messageTypes.videoOffer,
+    ...message,
     from: username,
-    to,
-    sdp,
   };
 }
 
-export function videoAnswerMessage(to, sdp) {
-  const { username, ok } = getUsername();
-  if (!ok) return undefined;
+export function videoOfferMessage(to, sdp) {
+  return videoExchangeMessage({ type: messageTypes.videoOffer, to, sdp });
+}
 
-  return {
-    type: messageTypes.videoOffer,
-    from: username,
-    to,
-    sdp,
-  };
+export function videoAnswerMessage(to, sdp) {
+  return videoExchangeMessage({ type: messageTypes.videoAnswer, to, sdp });
+}
+
+export function iceCandidateMessage(to, sdp) {
+  return videoExchangeMessage({ type: messageTypes.iceCandidate, to, sdp });
 }

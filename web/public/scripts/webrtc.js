@@ -41,7 +41,7 @@ export function receiveVideoOffer(message) {
     console.log(error);
     return;
   }
-  
+
   document.getElementById("local_video").srcObject = stream;
   for (const track of stream.getTracks()) {
     peer.addTrack(track, stream);
@@ -71,7 +71,7 @@ export function createPeerConnection(peerName) {
     ],
   });
 
-  peer.onicecandidate = () => handleICECandidate(peer);
+  peer.onicecandidate = (event) => handleICECandidate(peer);
   peer.ontrack = () => handleTrack(peer);
   peer.onnegotiationneeded = () => handleNegotiationNeeded(peer, peerName);
   peer.oniceconnectionstatechange = () => handleICEConnectionStateChange(peer);
@@ -83,7 +83,15 @@ export function createPeerConnection(peerName) {
   return peer;
 }
 
-function handleICECandidate(peer) {}
+/**
+ * @param {RTCPeerConnection} peer
+ * @param {RTCPeerConnectionIceEvent} event
+ */
+function handleICECandidate(peer, event) {
+  if (event.candidate) {
+    sendToServer()
+  }
+}
 
 function handleTrack(peer) {}
 

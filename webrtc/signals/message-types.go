@@ -27,23 +27,15 @@ type TargetedMessage struct {
 }
 
 // Message sent between two clients when initiating a video stream between each other.
+// The ICE (Interactive Connectivity Establishment) protocol is used to negotiate the connection
+// between two peers. This message allows clients to exchange ICE candidates between each other.
 type VideoExchangeMessage struct {
-	BaseMessage     // Type: MsgVideoOffer/MsgVideoAnswer.
+	BaseMessage     // Type: MsgVideoOffer/MsgVideoAnswer/MsgICECandidate.
 	TargetedMessage // Sender and receiver of video offer/answer.
 
 	// Session Description Protocol string: Describes a client's video stream config in order to
 	// properly set up a peer-to-peer stream.
 	SDP string `json:"sdp"`
-}
-
-// The ICE (Interactive Connectivity Establishment) protocol is used to negotiate the connection
-// between two peers. This message allows clients to exchange ICE candidates between each other.
-type ICECandidateMessage struct {
-	BaseMessage     // Type: MsgICECandidate.
-	TargetedMessage // Sender and receiver of ICE candidate.
-
-	// SDP (Session Description Protocol) candidate string for ICE negotation.
-	Candidate string `json:"candidate"`
 }
 
 // Message sent from server to client when a received message causes an error.
