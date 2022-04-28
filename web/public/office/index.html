@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/diffyjs@1.3.5/dist/diffy.min.js"></script>
+    <script type="module" src="./stream.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="flexChild" id="camera-container">
+        <div class="camera-box">
+          <video id="received_video" autoplay></video>
+          <video id="local_video" autoplay muted></video>
+          <button id="hangup-button" disabled>Hang Up</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
