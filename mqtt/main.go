@@ -10,13 +10,17 @@ import (
 	"github.com/dcs-team4/coffeetalk/mqtt/quiz"
 )
 
-// Ports for the MQTT broker.
-const (
-	socketPort = "1882"
-	tcpPort    = "1883"
-)
-
 func main() {
+	// Get ports from environment variables.
+	socketPort := os.Getenv("PORT")
+	if socketPort == "" {
+		socketPort = "1882"
+	}
+	tcpPort := os.Getenv("TCP_PORT")
+	if tcpPort == "" {
+		tcpPort = "1883"
+	}
+
 	// Sets up channel to keep running the server until a cancel signal is received.
 	cancelSignal := make(chan os.Signal, 1)
 	signal.Notify(cancelSignal, syscall.SIGINT, syscall.SIGTERM)

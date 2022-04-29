@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, abort
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import VideoGrant, ChatGrant
 from twilio.rest import Client
-from twilio.base.exceptions import TwilioRestException 
+from twilio.base.exceptions import TwilioRestException
 
 load_dotenv()
 twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
@@ -55,4 +55,4 @@ def login():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 3000)))
