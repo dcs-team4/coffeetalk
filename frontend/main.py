@@ -37,6 +37,11 @@ def index():
     return render_template("index.html", env=frontend_env)
 
 
+@app.route("/office")
+def index():
+    return render_template("office.html", env=frontend_env)
+
+
 @app.route("/login", methods=["POST"])
 def login():
     username = request.get_json(force=True).get("username")
