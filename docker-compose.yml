@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - PORT=3000
+      - ENV_FILE=.env
+    ports:
+      - 3000:3000
