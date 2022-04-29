@@ -226,14 +226,8 @@ function zoomTrack(trackElement) {
 function connectMQTT(username) {
   mqtt_client = new Paho.MQTT.Client(env.MQTT_HOST, env.MQTT_PORT, username);
 
-  client.connect({
-    onSuccess: function () {
-      client.subscribe("TTM4115/t4/quiz/#");
-    },
-  });
-
   //Function on what to do when a new message arrives from mqtt
-  client.onMessageArrived = function (message) {
+  mqtt_client.onMessageArrived = function (message) {
     if (connected) {
       //If the client is not connected to the stream, nothing happens
       if (message.destinationName == "TTM4115/t4/quiz/q") {
@@ -254,6 +248,12 @@ function connectMQTT(username) {
       }
     }
   };
+
+  mqtt_client.connect({
+    onSuccess: function () {
+      client.subscribe("TTM4115/t4/quiz/#");
+    },
+  });
 }
 
 //Function added to handle the start quiz button, uses mqtt broker to send the quiz started message to the other clients

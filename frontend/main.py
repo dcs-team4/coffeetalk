@@ -38,7 +38,7 @@ def index():
 
 
 @app.route("/office")
-def index():
+def office():
     return render_template("office.html", env=frontend_env)
 
 
