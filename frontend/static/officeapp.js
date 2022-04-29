@@ -33,43 +33,16 @@ var diffy = Diffy.create({
     }
     if (Math.floor((new Date() - motion_time) / 1000) < 10) {
       motion = true; //Set motion to true if motion has been detected in the last minute
-      //console.log("Motion detected");
     } else {
       motion = false; //Sets motion to false if motion has not been detected in the last minute
-      //console.log("Motion not detected");
     }
   },
 });
 
-var client = new Paho.MQTT.Client(env.MQTT_HOST, env.MQTT_PORT, "office-client");
-client.connect({
-  onSuccess: function () {
-    console.log("connected");
-    client.subscribe("TTM4115/t4/quiz/#");
-  },
-});
+let mqtt_client;
 
-//Function on what to do when a new message arrives from mqtt
-client.onMessageArrived = function (message) {
-  if (connected) {
-    //If the client is not connected to the stream, nothing happens
-    if (message.destinationName == "TTM4115/t4/quiz/q") {
-      //If the message is questions
-      questions.innerHTML = message.payloadString;
-    } else if (message.destinationName == "TTM4115/t4/quiz/a") {
-      answers.innerHTML = message.payloadString;
-    } else if (message.destinationName == "TTM4115/t4/quiz/s") {
-      //Else if the message is from the start/stop quiz channel
-      if (message.payloadString == "Quiz_started") {
-        startQuiz.disabled = true;
-      } else if (message.payloadString == "Quiz_ended") {
-        startQuiz.disabled = false;
-        questions.innerHTML = "";
-        answers.innerHTML = "";
-      }
-    }
-  }
-};
+addLocalVideo();
+startQuiz.addEventListener("click", startQuizHandler);
 
 //Function taken from the twilio example to add video
 function addLocalVideo() {
@@ -86,8 +59,6 @@ function addLocalVideo() {
 var officeconnect = window.setInterval(function () {
   //Function is called every 5 seconds to check if office workers should connect or not.
   if (motion) {
-    console.log("Motion detected");
-
     if (!connected) {
       var username = "e";
       connect(username)
@@ -99,7 +70,6 @@ var officeconnect = window.setInterval(function () {
         });
     }
   } else if (!motion) {
-    console.log("Motion not detected");
     if (connected) {
       disconnect();
       connected = false;
@@ -253,14 +223,44 @@ function zoomTrack(trackElement) {
   }
 }
 
+function connectMQTT(username) {
+  mqtt_client = new Paho.MQTT.Client(env.MQTT_HOST, env.MQTT_PORT, username);
+
+  client.connect({
+    onSuccess: function () {
+      client.subscribe("TTM4115/t4/quiz/#");
+    },
+  });
+
+  //Function on what to do when a new message arrives from mqtt
+  client.onMessageArrived = function (message) {
+    if (connected) {
+      //If the client is not connected to the stream, nothing happens
+      if (message.destinationName == "TTM4115/t4/quiz/q") {
+        //If the message is questions
+        questions.innerHTML = message.payloadString;
+        answers.innerHTML = "";
+      } else if (message.destinationName == "TTM4115/t4/quiz/a") {
+        answers.innerHTML = message.payloadString;
+      } else if (message.destinationName == "TTM4115/t4/quiz/s") {
+        //Else if the message is from the start/stop quiz channel
+        if (message.payloadString == "Quiz_started") {
+          startQuiz.disabled = true;
+        } else if (message.payloadString == "Quiz_ended") {
+          startQuiz.disabled = false;
+          questions.innerHTML = "";
+          answers.innerHTML = "";
+        }
+      }
+    }
+  };
+}
+
 //Function added to handle the start quiz button, uses mqtt broker to send the quiz started message to the other clients
 function startQuizHandler(event) {
   event.preventDefault();
   var message = new Paho.MQTT.Message("Quiz_started");
   message.destinationName = "TTM4115/t4/quiz/s";
-  client.send(message);
+  mqtt_client.send(message);
   startQuiz.disabled = true;
 }
-
-addLocalVideo();
-startQuiz.addEventListener("click", startQuizHandler);

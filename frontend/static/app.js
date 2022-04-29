@@ -16,49 +16,11 @@ const button = document.getElementById("join_leave");
 let connected = false;
 let room;
 
-const port = 8080;
-var client = new Paho.MQTT.Client(env.MQTT_HOST, env.MQTT_PORT, "client");
-client.connect({
-  onSuccess: function () {
-    console.log("connected");
-    client.subscribe("TTM4115/t4/quiz/#");
-  },
-  onFailure: () => {
-    console.log("failure");
-  },
-});
+let mqtt_client;
 
-client.onConnected = () => {
-  console.log("actually connected");
-};
-client.onConnectionLost = () => {
-  console.log("connection lost");
-};
-
-//Function on what to do when a new message arrives from mqtt
-client.onMessageArrived = function (message) {
-  console.log(connected);
-  console.log(message);
-  if (connected) {
-    //If the client is not connected to the stream, nothing happens
-    if (message.destinationName == "TTM4115/t4/quiz/q") {
-      //If the message is questions
-      questions.innerHTML = message.payloadString;
-      answers.innerHTML = "";
-    } else if (message.destinationName == "TTM4115/t4/quiz/a") {
-      answers.innerHTML = message.payloadString;
-    } else if (message.destinationName == "TTM4115/t4/quiz/s") {
-      //Else if the message is from the start/stop quiz channel
-      if (message.payloadString == "Quiz_started") {
-        startQuiz.disabled = true;
-      } else if (message.payloadString == "Quiz_ended") {
-        startQuiz.disabled = false;
-        questions.innerHTML = "";
-        answers.innerHTML = "";
-      }
-    }
-  }
-};
+addLocalVideo();
+button.addEventListener("click", connectButtonHandler);
+startQuiz.addEventListener("click", startQuizHandler);
 
 //Function taken from the twilio example to add video
 function addLocalVideo() {
@@ -72,11 +34,11 @@ function addLocalVideo() {
   });
 }
 
-/*Function taken from the twilio example to handle the connect button.
- *It eithers connects the client to the stream if the client is not connected,
- *or it disconnects the client if it is connected
+/**
+ * Function taken from the twilio example to handle the connect button.
+ * It eithers connects the client to the stream if the client is not connected,
+ * or it disconnects the client if it is connected
  */
-
 function connectButtonHandler(event) {
   event.preventDefault();
   if (!connected) {
@@ -98,6 +60,8 @@ function connectButtonHandler(event) {
         button.innerHTML = "Join call";
         button.disabled = false;
       });
+
+    connectMQTT(username);
   } else {
     disconnect();
     button.innerHTML = "Join call";
@@ -252,15 +216,44 @@ function zoomTrack(trackElement) {
   }
 }
 
+function connectMQTT(username) {
+  mqtt_client = new Paho.MQTT.Client(env.MQTT_HOST, env.MQTT_PORT, username);
+
+  client.connect({
+    onSuccess: function () {
+      client.subscribe("TTM4115/t4/quiz/#");
+    },
+  });
+
+  //Function on what to do when a new message arrives from mqtt
+  client.onMessageArrived = function (message) {
+    if (connected) {
+      //If the client is not connected to the stream, nothing happens
+      if (message.destinationName == "TTM4115/t4/quiz/q") {
+        //If the message is questions
+        questions.innerHTML = message.payloadString;
+        answers.innerHTML = "";
+      } else if (message.destinationName == "TTM4115/t4/quiz/a") {
+        answers.innerHTML = message.payloadString;
+      } else if (message.destinationName == "TTM4115/t4/quiz/s") {
+        //Else if the message is from the start/stop quiz channel
+        if (message.payloadString == "Quiz_started") {
+          startQuiz.disabled = true;
+        } else if (message.payloadString == "Quiz_ended") {
+          startQuiz.disabled = false;
+          questions.innerHTML = "";
+          answers.innerHTML = "";
+        }
+      }
+    }
+  };
+}
+
 //Function added to handle the start quiz button, uses mqtt broker to send the quiz started message to the other clients
 function startQuizHandler(event) {
   event.preventDefault();
   var message = new Paho.MQTT.Message("Quiz_started");
   message.destinationName = "TTM4115/t4/quiz/s";
-  client.send(message);
+  mqtt_client.send(message);
   startQuiz.disabled = true;
 }
-
-addLocalVideo();
-button.addEventListener("click", connectButtonHandler);
-startQuiz.addEventListener("click", startQuizHandler);
