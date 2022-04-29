@@ -7,13 +7,8 @@ FROM golang:1.18
 ENV APP_HOME /app
 WORKDIR APP_HOME
 
-# Downloads dependencies (separate COPY for caching).
-COPY go.mod ./
-COPY go.sum ./
-RUN go mod download
-
 # Builds source files.
-COPY ["*.go", "*.json"] ./
+COPY . ./
 RUN go build -o /coffeetalk-mqtt
 
 EXPOSE $PORT
