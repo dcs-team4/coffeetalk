@@ -38,9 +38,8 @@ function handleMessage(event) {
 
   switch (message.type) {
     case messages.VIDEO_OFFER:
-      receiveVideoOffer(message);
-      break;
     case messages.VIDEO_ANSWER:
+      receiveVideoOffer(message);
       break;
     case messages.ICE_CANDIDATE:
       receiveICECandidate(message);
