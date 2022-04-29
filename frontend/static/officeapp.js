@@ -47,7 +47,7 @@ startQuiz.addEventListener("click", startQuizHandler);
 //Function taken from the twilio example to add video
 function addLocalVideo() {
   Twilio.Video.createLocalVideoTrack().then((track) => {
-    let video = document.getElementById("local").firstChild;
+    let video = document.getElementById("local-video");
     let trackElement = track.attach();
     trackElement.addEventListener("click", () => {
       zoomTrack(trackElement);
@@ -60,7 +60,7 @@ var officeconnect = window.setInterval(function () {
   //Function is called every 5 seconds to check if office workers should connect or not.
   if (motion) {
     if (!connected) {
-      var username = "e";
+      var username = "Office";
       connect(username)
         .then(() => {
           startQuiz.disabled = false;
@@ -68,6 +68,8 @@ var officeconnect = window.setInterval(function () {
         .catch(() => {
           alert("Connection failed. Is the backend running?");
         });
+
+      connectMQTT(username);
     }
   } else if (!motion) {
     if (connected) {
