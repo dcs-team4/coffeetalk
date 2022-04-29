@@ -41,11 +41,7 @@ var diffy = Diffy.create({
   },
 });
 
-var client = new Paho.MQTT.Client(
-  "test.mosquitto.org",
-  8080,
-  "5dc8b26287094cf6sa9a30kcd5eae3cd539"
-);
+var client = new Paho.MQTT.Client(env.MQTT_HOST, env.MQTT_PORT, "office-client");
 client.connect({
   onSuccess: function () {
     console.log("connected");

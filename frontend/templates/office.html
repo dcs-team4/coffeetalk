@@ -31,6 +31,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js"></script>
     <!-- Diffy.js dependency -->
     <script src="https://cdn.jsdelivr.net/npm/diffyjs@1.3.5/dist/diffy.min.js"></script>
+    <!-- Environment variable initialization -->
+    <script type="text/javascript">
+      const env = {
+        MQTT_HOST: "{{ env.MQTT_HOST }}",
+        MQTT_PORT: parseInt("{{ env.MQTT_PORT }}"),
+      };
+    </script>
     <!-- Main script -->
     <script type="module" src="{{ url_for('static', filename='officeapp.js') }}"></script>
   </body>
