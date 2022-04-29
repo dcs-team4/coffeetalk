@@ -1,18 +1,22 @@
 # syntax=docker/dockerfile:1
 
+# Base image.
 FROM golang:1.18
 
+# Sets working directory.
 ENV APP_HOME /app
 WORKDIR APP_HOME
 
+# Downloads dependencies (separate COPY for caching).
 COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
 
-COPY *.go ./
-
-RUN go build -o /docker-gs-ping
+# Builds source files.
+COPY ["*.go", "*.json"] ./
+RUN go build -o /coffeetalk-mqtt
 
 EXPOSE $PORT
 
-CMD [ "/docker-gs-ping" ]
+# Run binary.
+CMD [ "/coffeetalk-mqtt" ]
