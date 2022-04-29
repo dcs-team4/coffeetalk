@@ -19,6 +19,12 @@ twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
 app = Flask(__name__)
 
 
+frontend_env = {
+    "MQTT_HOST": os.environ.get("MQTT_HOST", "localhost"),
+    "MQTT_PORT": os.environ.get("MQTT_PORT", "1882")
+}
+
+
 def get_chatroom(name):
     for conversation in twilio_client.conversations.conversations.stream():
         if conversation.friendly_name == name:
@@ -31,7 +37,7 @@ def get_chatroom(name):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', env=frontend_env)
 
 
 @app.route('/login', methods=['POST'])
@@ -53,7 +59,7 @@ def login():
     token.add_grant(VideoGrant(room='My Room'))
     token.add_grant(ChatGrant(service_sid=conversation.chat_service_sid))
 
-    return {'token': token.to_jwt().decode(),
+    return {'token': token.to_jwt(),
             'conversation_sid': conversation.sid}
 
 

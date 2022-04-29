@@ -9,5 +9,18 @@ services:
     environment:
       - PORT=3000
       - ENV_FILE=.env
+      - MQTT_HOST=localhost
+      - MQTT_PORT=1882
     ports:
       - 3000:3000
+  mqtt:
+    container_name: mqtt
+    build:
+      context: ./mqtt
+      dockerfile: Dockerfile
+    environment:
+      - PORT=1882
+      - TCP_PORT=1883
+    ports:
+      - 1882:1882
+      - 1883:1883

@@ -19,7 +19,7 @@ let room;
 
 const port = 8080;
 console.log(port);
-var client = new Paho.MQTT.Client("10.22.77.147", 8080, "client");
+var client = new Paho.MQTT.Client(env.MQTT_HOST, env.MQTT_PORT, "client");
 client.connect({
     onSuccess:function(){
         console.log("connected");
@@ -42,6 +42,7 @@ client.onMessageArrived = function(message){
     if(connected){                                                   //If the client is not connected to the stream, nothing happens
         if(message.destinationName == "TTM4115/t4/quiz/q"){          //If the message is questions
             questions.innerHTML = message.payloadString;
+            answers.innerHTML = "";
         }
         else if (message.destinationName == "TTM4115/t4/quiz/a"){
             answers.innerHTML = message.payloadString;
