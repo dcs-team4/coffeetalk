@@ -9,7 +9,7 @@ services:
     environment:
       - PORT=3000
       - ENV_FILE=.env
-      - MQTT_HOST=localhost
+      - MQTT_HOST=188.166.80.50
       - MQTT_PORT=1882
     ports:
       - 3000:3000
