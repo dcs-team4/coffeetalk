@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"syscall"
 
 	"github.com/dcs-team4/coffeetalk/mqtt/broker"
 	"github.com/dcs-team4/coffeetalk/mqtt/quiz"
@@ -23,7 +22,7 @@ func main() {
 
 	// Sets up channel to keep running the server until a cancel signal is received.
 	cancelSignal := make(chan os.Signal, 1)
-	signal.Notify(cancelSignal, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(cancelSignal, os.Interrupt, os.Kill)
 
 	// Starts MQTT broker.
 	broker := broker.Start(socketPort, tcpPort)
@@ -36,8 +35,9 @@ func main() {
 	log.Println("Running quiz machine...")
 
 	// Waits for received cancel signal.
-	<-cancelSignal
+	sig := <-cancelSignal
 
+	log.Println(sig.String())
 	broker.Close()
-	log.Println("Server closed")
+	log.Println("Server closed.")
 }
