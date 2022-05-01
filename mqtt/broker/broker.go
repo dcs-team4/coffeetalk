@@ -3,6 +3,7 @@ package broker
 
 import (
 	"log"
+	"os"
 
 	mqtt "github.com/mochi-co/mqtt/server"
 	"github.com/mochi-co/mqtt/server/events"
@@ -15,13 +16,15 @@ func Start(socketPort string, tcpPort string) *mqtt.Server {
 	// Configures the broker server.
 	server := mqtt.NewServer(nil)
 
+	listenerConfig := configureListener()
+
 	// Listens for WebSocket connections on the given socketPort.
 	socket := listeners.NewWebsocket("socket1", ":"+socketPort)
-	err := server.AddListener(socket, &listeners.Config{Auth: new(auth.Allow)})
+	err := server.AddListener(socket, listenerConfig)
 
 	// Listens for TCP connections on the given tcpPort.
 	tcp := listeners.NewTCP("tcp1", ":"+tcpPort)
-	err = server.AddListener(tcp, &listeners.Config{Auth: new(auth.Allow)})
+	err = server.AddListener(tcp, listenerConfig)
 
 	if err != nil {
 		log.Fatal(err)
@@ -41,4 +44,23 @@ func Start(socketPort string, tcpPort string) *mqtt.Server {
 	}()
 
 	return server
+}
+
+// Returns an MQTT listener config.
+// Tries to read TLS_CERTIFICATE and TLS_PRIVATE_KEY environment variables, and if they are found,
+// configures TLS for the listener.
+func configureListener() *listeners.Config {
+	config := &listeners.Config{Auth: new(auth.Allow)}
+
+	tlsCertificate := os.Getenv("TLS_CERTIFICATE")
+	tlsPrivateKey := os.Getenv("TLS_PRIVATE-KEY")
+
+	if tlsCertificate != "" && tlsPrivateKey != "" {
+		config.TLS = &listeners.TLS{
+			Certificate: []byte(tlsCertificate),
+			PrivateKey:  []byte(tlsPrivateKey),
+		}
+	}
+
+	return config
 }
