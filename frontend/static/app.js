@@ -244,13 +244,17 @@ function connectMQTT(username) {
     }
   };
 
+  mqtt_client.onConnectionLost = ({ errorMessage }) => {
+    console.log(`Connection to MQTT broker lost: ${errorMessage}`);
+  };
+
   mqtt_client.connect({
     onSuccess: () => {
       console.log("Successfully connected to MQTT broker.");
       client.subscribe("TTM4115/t4/quiz/#");
     },
-    onFailure: (response) => {
-      console.log(response.errorMessage);
+    onFailure: ({ errorMessage }) => {
+      console.log(`Failed to connect to MQTT broker: ${errorMessage}`);
     },
     useSSL: location.hostname !== "localhost",
   });
