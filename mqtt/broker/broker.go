@@ -56,14 +56,13 @@ func Start(socketPort string, tcpPort string) *mqtt.Server {
 }
 
 // Returns an MQTT listener config.
-// Tries to read TLS_CERTIFICATE and TLS_PRIVATE_KEY environment variables, and if they are found,
-// configures TLS for the listener.
+// If in a production environment, configures TLS for the listener with the embedded TLS files.
 func configureListener() *listeners.Config {
 	config := &listeners.Config{Auth: new(auth.Allow)}
 
-	_, tlsDisabled := os.LookupEnv("TLS_DISABLED")
+	env := os.Getenv("ENV")
 
-	if !tlsDisabled {
+	if env == "production" {
 		config.TLS = &listeners.TLS{
 			Certificate: tlsCertificate,
 			PrivateKey:  tlsKey,

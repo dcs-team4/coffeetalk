@@ -7,21 +7,21 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      - ENV=development
+      - ENV=production
       - ENV_FILE=.env
-      - PORT=3000
-      - MQTT_HOST=localhost
+      - PORT=443
+      - MQTT_HOST=coffeetalk.hermannm.dev
       - MQTT_PORT=1882
     ports:
-      - 3000:3000
+      - 443:443
   mqtt:
     container_name: mqtt
     build:
       context: ./mqtt
       dockerfile: Dockerfile
     environment:
-      - ENV=development
-      - PORT=1882
+      - ENV=production
+      - SOCKET_PORT=1882
       - TCP_PORT=1883
     ports:
       - 1882:1882

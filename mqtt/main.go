@@ -18,7 +18,7 @@ func main() {
 	}
 
 	// Get ports from environment variables.
-	socketPort := os.Getenv("PORT")
+	socketPort := os.Getenv("SOCKET_PORT")
 	if socketPort == "" {
 		socketPort = "1882"
 	}
