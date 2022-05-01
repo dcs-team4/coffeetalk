@@ -7,9 +7,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      - PORT=3000
       - ENV_FILE=.env
-      - MQTT_HOST=188.166.80.50
+      - MQTT_HOST=coffeetalk.hermannm.dev
       - MQTT_PORT=1882
     ports:
       - 3000:3000

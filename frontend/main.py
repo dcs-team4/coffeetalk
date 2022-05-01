@@ -66,14 +66,13 @@ def login():
 
 
 if __name__ == "__main__":
-    app_args = {
-        "host": "0.0.0.0",
-        "port": int(os.environ.get("PORT", 3000)),
-    }
+    host = "0.0.0.0"
 
-    # Adds TLS certificate and key to app arguments, unless a TLS_DISABLED env variable is present.
-    if os.environ.get("TLS_DISABLED") is None:
-        app_args["ssl_context"] = ("tls-cert.pem", "tls-key.pem")
-
-    # Unpacks the constructed app arguments to pass to `run`.
-    app.run(**app_args)
+    # Runs server with TLS if in a production environment,
+    # otherwise runs on port specified in PORT environment variable (defaulting to 3000).
+    environment = os.environ.get("ENV", "production")
+    if environment == "production":
+        app.run(host=host, port=443, ssl_context=("tls-cert.pem", "tls-key.pem"))
+    else:
+        port = int(os.environ.get("PORT", 3000))
+        app.run(host=host, port=port)
