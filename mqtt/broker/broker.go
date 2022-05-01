@@ -11,6 +11,14 @@ import (
 	"github.com/mochi-co/mqtt/server/listeners/auth"
 )
 
+// Embedded file with TLS certificate.
+//go:embed tls-cert.pem
+var tlsCertificate []byte
+
+// Embedded file with TLS key.
+//go:embed tls-key.pem
+var tlsKey []byte
+
 // Starts an MQTT broker that listens for WebSocket and TCP connections on the given ports.
 func Start(socketPort string, tcpPort string) *mqtt.Server {
 	// Configures the broker server.
@@ -52,13 +60,12 @@ func Start(socketPort string, tcpPort string) *mqtt.Server {
 func configureListener() *listeners.Config {
 	config := &listeners.Config{Auth: new(auth.Allow)}
 
-	tlsCertificate := os.Getenv("TLS_CERTIFICATE")
-	tlsPrivateKey := os.Getenv("TLS_PRIVATE-KEY")
+	_, tlsDisabled := os.LookupEnv("TLS_DISABLED")
 
-	if tlsCertificate != "" && tlsPrivateKey != "" {
+	if !tlsDisabled {
 		config.TLS = &listeners.TLS{
-			Certificate: []byte(tlsCertificate),
-			PrivateKey:  []byte(tlsPrivateKey),
+			Certificate: tlsCertificate,
+			PrivateKey:  tlsKey,
 		}
 	}
 
