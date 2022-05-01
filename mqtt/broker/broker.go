@@ -2,6 +2,7 @@
 package broker
 
 import (
+	_ "embed"
 	"log"
 	"os"
 
