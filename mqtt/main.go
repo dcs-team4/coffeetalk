@@ -7,9 +7,16 @@ import (
 
 	"github.com/dcs-team4/coffeetalk/mqtt/broker"
 	"github.com/dcs-team4/coffeetalk/mqtt/quiz"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Loads environment variables from .env file.
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Println("Failed to load .env file.")
+	}
+
 	// Get ports from environment variables.
 	socketPort := os.Getenv("PORT")
 	if socketPort == "" {

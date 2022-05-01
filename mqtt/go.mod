@@ -6,6 +6,7 @@ exclude github.com/dcs-team4/coffeetalk v0.0.0-20220425110658-0127120a0ae4
 
 require (
 	github.com/dcs-team4/coffeetalk/stm v1.0.0
+	github.com/joho/godotenv v1.4.0
 	github.com/mochi-co/mqtt v1.2.1
 )
 
