@@ -1,6 +1,8 @@
 go 1.18
 
 use (
+	./web
+	./webrtc
 	./mqtt
 	./stm
 )
