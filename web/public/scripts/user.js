@@ -9,3 +9,11 @@ export function getUsername() {
     return { username: undefined, ok: false };
   }
 }
+
+export function login(name) {
+  username = name;
+}
+
+export function logout() {
+  username = undefined;
+}
