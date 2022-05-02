@@ -11,6 +11,7 @@ WORKDIR APP_HOME
 COPY . ./
 RUN go build -o /coffeetalk-mqtt
 
+# Exposes port from PORT environment variable.
 EXPOSE $PORT
 
 # Run binary.
