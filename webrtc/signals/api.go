@@ -1,8 +1,6 @@
 package signals
 
 import (
-	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 	"sync"
@@ -35,32 +33,11 @@ func StartServer(port string, tlsConfig TLSConfig) {
 
 // HTTP handler for establishing a WebSocket connection to the server.
 func connectSocket(res http.ResponseWriter, req *http.Request) {
-	// Gets and validates the request body.
-	var body struct {
-		Username string `json:"username"`
-	}
-	data, err := io.ReadAll(req.Body)
-	err = json.Unmarshal(data, &body)
-	if err != nil {
-		http.Error(res, "invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	username := body.Username
-
-	// Ensures unique usernames.
-	for existingUsername := range users.Map {
-		if username == existingUsername {
-			http.Error(res, "username already taken", http.StatusBadRequest)
-			return
-		}
-	}
-
 	// Upgrades the request to a WebSocket connection.
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
-		// Accepts all origins for now, in order to enable home clients.
+		// Accepts all origins, in order to enable home clients.
 		CheckOrigin: func(*http.Request) bool { return true },
 	}
 	socket, err := upgrader.Upgrade(res, req, nil)
@@ -70,23 +47,20 @@ func connectSocket(res http.ResponseWriter, req *http.Request) {
 	}
 
 	user := &User{
-		Name:     username,
-		Socket:   socket,
-		InStream: false,
-		Lock:     new(sync.RWMutex),
+		Name:   "",
+		Socket: socket,
+		Lock:   new(sync.RWMutex),
 	}
 
 	// Adds the requesting participant to the list of participants.
-	users.Map[username] = user
+	userID := addUser(user)
 
 	// Spawns a goroutine for handling messages from the user.
 	go user.Listen()
 
 	// Adds a handler for removing the participant when the socket is closed.
 	socket.SetCloseHandler(func(code int, text string) error {
-		users.Lock.Lock()
-		defer users.Lock.Unlock()
-		delete(users.Map, username)
+		removeUser(userID)
 		return nil
 	})
 

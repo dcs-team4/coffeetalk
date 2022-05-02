@@ -38,6 +38,14 @@ type VideoExchangeMessage struct {
 	SDP string `json:"sdp"`
 }
 
+// Message sent from client to server when wishing to join the video stream.
+type JoinStreamMessage struct {
+	BaseMessage // Type: MsgJoinStream
+
+	// The username the user wishes to use in the stream.
+	Username string `json:"username"`
+}
+
 // Message sent from server to client when a received message causes an error.
 type ErrorMessage struct {
 	BaseMessage // Type: MsgError

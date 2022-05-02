@@ -54,12 +54,17 @@ func (user *User) HandleMessage(rawMessage []byte) {
 		// Forwards the video offer message to the intended target.
 		target.WriteJSON(videoExchange)
 	case MsgJoinStream:
+		var joinStream JoinStreamMessage
+		if !DeserializeMsg(rawMessage, &joinStream, user) {
+			return
+		}
+
 		user.Lock.Lock()
-		user.InStream = true
+		user.JoinStream(joinStream.Username)
 		user.Lock.Unlock()
 	case MsgLeaveStream:
 		user.Lock.Lock()
-		user.InStream = false
+		user.LeaveStream()
 		user.Lock.Unlock()
 	}
 }
@@ -83,7 +88,7 @@ func DeserializeMsg(rawMessage []byte, pointer any, sender *User) (ok bool) {
 // Validates the given TargetedMessage. If valid, sets the message's From field to the given
 // sender's username, and returns the target's connection. Otherwise, returns ok=false.
 func (msg *TargetedMessage) Validate(sender *User) (target *websocket.Conn, ok bool) {
-	targetUser, ok := users.Get(msg.To)
+	targetUser, ok := users.GetByName(msg.To)
 
 	if !ok {
 		errMsg := "Invalid message target"
