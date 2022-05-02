@@ -17,7 +17,7 @@ type TLSConfig struct {
 	KeyFile  string // Path to TLS key file.
 }
 
-// Starts a WebRTC signaling server on the given port, with TLS if tls=true.
+// Starts a WebRTC signaling server on the given port, optionally with TLS.
 func StartServer(port string, tlsConfig TLSConfig) {
 	http.HandleFunc("/", connectSocket)
 
