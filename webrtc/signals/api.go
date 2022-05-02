@@ -10,11 +10,24 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Starts a WebRTC signaling server on the given port.
-func StartServer(port string) {
+// Optional configuration for TLS on the signaling server.
+type TLSConfig struct {
+	TLS      bool   // Whether TLS is enabled.
+	CertFile string // Path to TLS certificate file.
+	KeyFile  string // Path to TLS key file.
+}
+
+// Starts a WebRTC signaling server on the given port, with TLS if tls=true.
+func StartServer(port string, tlsConfig TLSConfig) {
 	http.HandleFunc("/", connectSocket)
 
-	err := http.ListenAndServe(":"+port, nil)
+	// Runs the server until an error is encountered.
+	var err error
+	if tlsConfig.TLS {
+		err = http.ListenAndServeTLS(":"+port, tlsConfig.CertFile, tlsConfig.KeyFile, nil)
+	} else {
+		err = http.ListenAndServe(":"+port, nil)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
