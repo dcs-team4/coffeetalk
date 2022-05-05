@@ -16,6 +16,8 @@ let room;
 let motion_time = new Date(2018, 11, 24, 10, 33, 30, 0); //random date
 let motion = false;
 
+const officeLocation = new URLSearchParams(window.location.search).get("location");
+
 //Uses diffy library to detect motion on camera.
 var diffy = Diffy.create({
   resolution: { x: 10, y: 5 },
@@ -60,7 +62,8 @@ var officeconnect = window.setInterval(function () {
   //Function is called every 5 seconds to check if office workers should connect or not.
   if (motion) {
     if (!connected) {
-      var username = "Office";
+      var username = `Office ${officeLocation}`;
+
       connect(username)
         .then(() => {
           startQuiz.disabled = false;
