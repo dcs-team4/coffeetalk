@@ -263,7 +263,7 @@ function connectMQTT(username) {
   mqtt_client.connect({
     onSuccess: function () {
       console.log("Successfully connected to MQTT broker.");
-      client.subscribe("TTM4115/t4/quiz/#");
+      mqtt_client.subscribe("TTM4115/t4/quiz/#");
     },
     onFailure: ({ errorMessage }) => {
       console.log(`Failed to connect to MQTT broker: ${errorMessage}`);
