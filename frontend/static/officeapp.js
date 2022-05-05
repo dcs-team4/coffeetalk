@@ -233,6 +233,8 @@ function connectMQTT(username) {
 
   //Function on what to do when a new message arrives from mqtt
   mqtt_client.onMessageArrived = function (message) {
+    console.log(`Message arrived: [${message.destinationName}] ${message.payloadString}`);
+
     if (connected) {
       //If the client is not connected to the stream, nothing happens
       if (message.destinationName == "TTM4115/t4/quiz/q") {
@@ -254,10 +256,19 @@ function connectMQTT(username) {
     }
   };
 
+  mqtt_client.onConnectionLost = ({ errorMessage }) => {
+    console.log(`Connection to MQTT broker lost: ${errorMessage}`);
+  };
+
   mqtt_client.connect({
     onSuccess: function () {
+      console.log("Successfully connected to MQTT broker.");
       client.subscribe("TTM4115/t4/quiz/#");
     },
+    onFailure: ({ errorMessage }) => {
+      console.log(`Failed to connect to MQTT broker: ${errorMessage}`);
+    },
+    useSSL: location.hostname !== "localhost",
   });
 }
 
