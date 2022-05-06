@@ -54,18 +54,14 @@ func (user *User) HandleMessage(rawMessage []byte) {
 		// Forwards the video offer message to the intended target.
 		target.WriteJSON(videoExchange)
 	case MsgJoinStream:
-		var joinStream JoinStreamMessage
+		var joinStream NameMessage
 		if !DeserializeMsg(rawMessage, &joinStream, user) {
 			return
 		}
 
-		user.Lock.Lock()
 		user.JoinStream(joinStream.Username)
-		user.Lock.Unlock()
 	case MsgLeaveStream:
-		user.Lock.Lock()
 		user.LeaveStream()
-		user.Lock.Unlock()
 	}
 }
 

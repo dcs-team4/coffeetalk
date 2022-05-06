@@ -6,7 +6,9 @@ const (
 	MsgVideoAnswer  string = "video-answer"
 	MsgICECandidate string = "new-ice-candidate"
 	MsgJoinStream   string = "join-stream"
+	MsgUserJoined   string = "user-joined"
 	MsgLeaveStream  string = "leave-stream"
+	MsgUserLeft     string = "user-left"
 	MsgError        string = "error"
 )
 
@@ -38,9 +40,10 @@ type VideoExchangeMessage struct {
 	SDP string `json:"sdp"`
 }
 
-// Message sent from client to server when wishing to join the video stream.
-type JoinStreamMessage struct {
-	BaseMessage // Type: MsgJoinStream
+// Message with a username field, for when a new user wants to join the stream, to signal to other
+// users that a new user has joined, or to signal to other users that a user has left.
+type NameMessage struct {
+	BaseMessage // Type: MsgJoinStream/MsgUserJoined/MsgUserLeft
 
 	// The username the user wishes to use in the stream.
 	Username string `json:"username"`

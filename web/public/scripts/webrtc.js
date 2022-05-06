@@ -86,6 +86,16 @@ export async function receiveICECandidate(message) {
   }
 }
 
+/** @param {string} peerName */
+export function removePeerConnection(peerName) {
+  if (!peers.hasOwnProperty(peerName)) return;
+  const peer = peers[peerName];
+
+  peer.connection.close();
+  if (peer.video) videoContainer.removeChild(peer.video);
+  delete peers[peerName];
+}
+
 /** @returns {Peer} */
 export function createPeerConnection(peerName) {
   const peer = {

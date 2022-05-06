@@ -32,6 +32,8 @@ func (user User) InStream() bool {
 	return user.Name != ""
 }
 
+// Sets the given user's name to the given username,
+// and signals other users that a new user has joined.
 func (user *User) JoinStream(username string) error {
 	if username == "" {
 		return errors.New("Username cannot be blank.")
@@ -51,13 +53,38 @@ func (user *User) JoinStream(username string) error {
 
 	user.Name = username
 
+	for _, otherUser := range users.Map {
+		if otherUser.Name == username {
+			continue
+		}
+
+		otherUser.Socket.WriteJSON(NameMessage{
+			BaseMessage: BaseMessage{Type: MsgUserJoined},
+			Username:    username,
+		})
+	}
+
 	return nil
 }
 
-// Removes the given user from the stream.
+// Removes the given user from the stream, and signals to other users that the user has left.
 func (user *User) LeaveStream() {
 	user.Lock.Lock()
 	defer user.Lock.Unlock()
+
+	users.Lock.RLock()
+	defer users.Lock.RUnlock()
+
+	for _, otherUser := range users.Map {
+		if otherUser.Name == user.Name {
+			continue
+		}
+
+		otherUser.Socket.WriteJSON(NameMessage{
+			BaseMessage: BaseMessage{Type: MsgUserLeft},
+			Username:    user.Name,
+		})
+	}
 
 	user.Name = ""
 }

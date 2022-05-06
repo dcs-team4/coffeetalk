@@ -1,6 +1,11 @@
 //@ts-check
 
-import { receiveICECandidate, receiveVideoOffer } from "./webrtc";
+import {
+  createPeerConnection,
+  receiveICECandidate,
+  receiveVideoOffer,
+  removePeerConnection,
+} from "./webrtc";
 
 const socketPort = "8000";
 
@@ -28,7 +33,9 @@ export const messages = Object.freeze({
   VIDEO_ANSWER: "video-answer",
   ICE_CANDIDATE: "new-ice-candidate",
   JOIN_STREAM: "join-stream",
+  USER_JOINED: "user-joined",
   LEAVE_STREAM: "leave-stream",
+  USER_LEFT: "user-left",
   ERROR: "error",
 });
 
@@ -44,8 +51,15 @@ function handleMessage(event) {
     case messages.ICE_CANDIDATE:
       receiveICECandidate(message);
       break;
+    case messages.USER_JOINED:
+      createPeerConnection(message.username);
+      break;
+    case messages.USER_LEFT:
+      removePeerConnection(message.username);
+      break;
     case messages.ERROR:
       console.log(`Error received from WebRTC server: ${message.errorMessage}`);
+      break;
     default:
       console.log(`Unrecognized message type: ${message.type}`);
   }
