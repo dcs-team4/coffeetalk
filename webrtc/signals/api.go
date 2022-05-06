@@ -55,6 +55,7 @@ func connectSocket(res http.ResponseWriter, req *http.Request) {
 
 	// Adds the requesting participant to the list of participants.
 	userID := addUser(user)
+	log.Printf("Added user with ID %v.\n", userID)
 
 	// Spawns a goroutine for handling messages from the user.
 	go user.Listen()
@@ -65,5 +66,17 @@ func connectSocket(res http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
-	res.Write([]byte("websocket connection established"))
+	// Sends connection success message back, with number of participants in call.
+	users.Lock.RLock()
+	defer users.Lock.RUnlock()
+	participantCount := 0
+	for _, user := range users.Map {
+		if user.Name != "" {
+			participantCount++
+		}
+	}
+	socket.WriteJSON(ConnectionSuccessMessage{
+		BaseMessage:      BaseMessage{Type: MsgConnectionSuccess},
+		ParticipantCount: participantCount,
+	})
 }

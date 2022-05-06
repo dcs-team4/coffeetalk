@@ -2,14 +2,15 @@ package signals
 
 // Message types allowed to and from this server.
 const (
-	MsgVideoOffer   string = "video-offer"
-	MsgVideoAnswer  string = "video-answer"
-	MsgICECandidate string = "new-ice-candidate"
-	MsgJoinStream   string = "join-stream"
-	MsgUserJoined   string = "user-joined"
-	MsgLeaveStream  string = "leave-stream"
-	MsgUserLeft     string = "user-left"
-	MsgError        string = "error"
+	MsgVideoOffer        string = "video-offer"
+	MsgVideoAnswer       string = "video-answer"
+	MsgICECandidate      string = "new-ice-candidate"
+	MsgJoinStream        string = "join-stream"
+	MsgConnectionSuccess string = "connection-success"
+	MsgUserJoined        string = "user-joined"
+	MsgLeaveStream       string = "leave-stream"
+	MsgUserLeft          string = "user-left"
+	MsgError             string = "error"
 )
 
 // Base struct to embed in all message types.
@@ -37,7 +38,7 @@ type VideoExchangeMessage struct {
 
 	// Session Description Protocol string: Describes a client's video stream config in order to
 	// properly set up a peer-to-peer stream.
-	SDP string `json:"sdp"`
+	SDP any `json:"sdp"`
 }
 
 // Message with a username field, for when a new user wants to join the stream, to signal to other
@@ -47,6 +48,13 @@ type NameMessage struct {
 
 	// The username the user wishes to use in the stream.
 	Username string `json:"username"`
+}
+
+// Message sent when a user successfully establishes a socket connection to the server.
+type ConnectionSuccessMessage struct {
+	BaseMessage // Type: MsgConnectionSuccess
+
+	ParticipantCount int `json:"participantCount"`
 }
 
 // Message sent from server to client when a received message causes an error.

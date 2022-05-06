@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/dcs-team4/coffeetalk/webrtc/signals"
@@ -14,5 +15,6 @@ func main() {
 	}
 
 	// Starts the WebRTC signaling server.
+	log.Printf("WebRTC signaling server listening on port %v...\n", port)
 	signals.StartServer(port)
 }
