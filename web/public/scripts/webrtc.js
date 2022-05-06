@@ -8,7 +8,7 @@ import { messages, sendToServer } from "./socket.js";
  * @property {HTMLVideoElement} [video]
  */
 
-/** @type {{ [key: string]: Peer }} */
+/** @type {{ [username: string]: Peer }} */
 const peers = {};
 
 const videoContainer = document.getElementById("video-container");
