@@ -3,12 +3,8 @@
 # Base image.
 FROM python:3.10-slim
 
-# For logging in GCP.
-ENV PYTHONUNBUFFERED True
-
 # Sets working directory.
-ENV APP_HOME /app
-WORKDIR $APP_HOME
+WORKDIR /app
 
 # Adds source files (ignores files in .dockerignore).
 COPY . ./
