@@ -135,7 +135,7 @@ function handleICECandidate(peerName, event) {
   }
 }
 
-/** @param {Peer} peer */
+/** @param {Peer} peer, @param {string} peerName */
 async function handleNegotiationNeeded(peer, peerName) {
   try {
     const offer = await peer.connection.createOffer();

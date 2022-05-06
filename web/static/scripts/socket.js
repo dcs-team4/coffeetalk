@@ -5,19 +5,16 @@ import {
   receiveICECandidate,
   receiveVideoOffer,
   removePeerConnection,
-} from "./webrtc";
-
-const socketPort = "8000";
+} from "./webrtc.js";
 
 /** @type {WebSocket | undefined} */
 let socket;
 
 export function connectSocket() {
-  let protocol = "ws";
-  if (location.protocol === "https:") {
-    protocol = "wss";
-  }
-  const serverURL = `${protocol}://${location.hostname}:${socketPort}`;
+  const protocol = env?.ENV === "production" ? "wss" : "ws";
+  const host = env?.MQTT_HOST ?? "localhost";
+  const port = env?.WEBRTC_PORT ?? "8000";
+  const serverURL = `${protocol}://${host}:${port}`;
 
   socket = new WebSocket(serverURL);
   socket.addEventListener("message", handleMessage);

@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" href="style.css" />
-    <script type="module" src="./scripts/index.js"></script>
+    <link rel="stylesheet" href="static/style.css" />
+    <script type="text/javascript">
+      const env = {{.}}
+      console.log(env);
+    </script>
+    <script type="module" src="static/scripts/index.js"></script>
   </head>
   <body>
     <div id="main">
