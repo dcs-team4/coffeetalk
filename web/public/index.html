@@ -6,8 +6,30 @@
   </head>
   <body>
     <div id="main">
-      <div id="title-bar">
-        <div>CoffeeTalk</div>
+      <div id="title-bar" class="bar flex">
+        <div class="bold">CoffeeTalk</div>
+      </div>
+      <div id="quiz-bar" class="bar flex">
+        <div class="container">
+          <div class="row gap">
+            <div class="bold">Name:</div>
+            <input type="text" class="bold" />
+          </div>
+          <button id="join-call" class="top-spacing">Join Call</button>
+        </div>
+      </div>
+      <div id="quiz-bar" class="bar flex">
+        <div class="container">
+          <button id="start-quiz">Start Quiz</button>
+          <div class="row gap">
+            <div class="bold top-spacing hide">Question:</div>
+            <div id="quiz-question"></div>
+          </div>
+          <div class="row gap">
+            <div class="bold top-spacing hide">Answer:</div>
+            <div id="quiz-answer"></div>
+          </div>
+        </div>
       </div>
       <div id="video-container">
         <video id="local-video" autoplay muted></video>
