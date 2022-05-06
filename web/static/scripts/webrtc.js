@@ -1,61 +1,92 @@
 //@ts-check
 
 import { messages, sendToServer } from "./socket.js";
+import { createPeerVideoElement, decrementParticipantCount, DOM } from "./dom.js";
+import { getUsername } from "./user.js";
 
 /**
  * @typedef {Object} Peer
  * @property {RTCPeerConnection} connection
+ * @property {HTMLElement} [videoContainer]
  * @property {HTMLVideoElement} [video]
  */
 
 /** @type {{ [username: string]: Peer }} */
 const peers = {};
 
-const videoContainer = document.getElementById("video-container");
-const localVideo = /** @type {HTMLVideoElement} */ (document.getElementById("local-video"));
+/** @type {MediaStream} */
+let localStream;
 
 const mediaConstraints = {
   audio: true,
   video: true,
 };
 
-export async function sendVideoOffer(peerName) {
-  const peer = createPeerConnection(peerName);
-
-  let stream;
+export async function streamLocalVideo() {
   try {
-    stream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+    localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
   } catch (error) {
     console.log(error);
     return;
   }
 
-  localVideo.srcObject = stream;
-  for (const track of stream.getTracks()) {
-    peer.connection.addTrack(track, stream);
+  DOM.localVideo.srcObject = localStream;
+}
+
+export function leaveCall() {
+  for (const peer of Object.values(peers)) {
+    peer.connection.close();
+    DOM.videoContainer.removeChild(peer.videoContainer);
+  }
+
+  for (const peerName in peers) {
+    delete peers[peerName];
+  }
+
+  DOM.leaveStreamBar.classList.add("hide");
+  DOM.quizBar.classList.add("hide");
+  DOM.loginBar.classList.remove("hide");
+
+  decrementParticipantCount();
+
+  sendToServer({ type: messages.LEAVE_STREAM });
+}
+
+/** @param {string} peerName */
+export async function sendVideoOffer(peerName) {
+  const peer = createPeerConnection(peerName);
+
+  if (!localStream) return;
+
+  for (const track of localStream.getTracks()) {
+    peer.connection.addTrack(track, localStream);
   }
 }
 
-export async function receiveVideoOffer(message) {
-  const { from: sender, sdp } = message;
+/** @param {string} sender, @param {any} sdp */
+export async function receiveVideoAnswer(sender, sdp) {
+  if (!peers.hasOwnProperty(sender)) {
+    console.log(`Unrecognized peer: ${sender}`);
+    return;
+  }
 
+  const peer = peers[sender];
+
+  const session = new RTCSessionDescription(sdp);
+  await peer.connection.setRemoteDescription(session);
+}
+
+/** @param {string} sender, @param {any} sdp */
+export async function receiveVideoOffer(sender, sdp) {
   const peer = createPeerConnection(sender);
 
   const session = new RTCSessionDescription(sdp);
   await peer.connection.setRemoteDescription(session);
 
-  let stream;
-  try {
-    stream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
-  } catch (error) {
-    console.log(error);
-    return;
-  }
-
-  localVideo.srcObject = stream;
-
-  for (const track of stream.getTracks()) {
-    peer.connection.addTrack(track, stream);
+  if (localStream) {
+    for (const track of localStream.getTracks()) {
+      peer.connection.addTrack(track, localStream);
+    }
   }
 
   try {
@@ -92,7 +123,7 @@ export function removePeerConnection(peerName) {
   const peer = peers[peerName];
 
   peer.connection.close();
-  if (peer.video) videoContainer.removeChild(peer.video);
+  if (peer.videoContainer) DOM.videoContainer.removeChild(peer.videoContainer);
   delete peers[peerName];
 }
 
@@ -109,8 +140,8 @@ export function createPeerConnection(peerName) {
     }),
   };
 
-  peer.connection.onicecandidate = (event) => handleICECandidate(peerName, event);
-  peer.connection.ontrack = () => handleTrack(peer);
+  peer.connection.onicecandidate = (event) => handleICECandidate(event, peerName);
+  peer.connection.ontrack = (event) => handleTrack(event, peer, peerName);
   peer.connection.onnegotiationneeded = () => handleNegotiationNeeded(peer, peerName);
   peer.connection.oniceconnectionstatechange = () => handleICEConnectionStateChange(peer);
   peer.connection.onicegatheringstatechange = () => handleICEGatheringStateChange(peer);
@@ -121,11 +152,8 @@ export function createPeerConnection(peerName) {
   return peer;
 }
 
-/**
- * @param {string} peerName
- * @param {RTCPeerConnectionIceEvent} event
- */
-function handleICECandidate(peerName, event) {
+/** @param {RTCPeerConnectionIceEvent} event, @param {string} peerName */
+function handleICECandidate(event, peerName) {
   if (event.candidate) {
     sendToServer({
       type: messages.ICE_CANDIDATE,
@@ -152,7 +180,16 @@ async function handleNegotiationNeeded(peer, peerName) {
   });
 }
 
-function handleTrack(peer) {}
+/** @param {RTCTrackEvent} event, @param {Peer} peer, @param {string} peerName */
+function handleTrack(event, peer, peerName) {
+  if (!peer.video) {
+    const [video, container] = createPeerVideoElement(peerName);
+    peer.video = video;
+    peer.videoContainer = container;
+  }
+
+  peer.video.srcObject = event.streams[0];
+}
 
 function handleICEConnectionStateChange(peer) {}
 

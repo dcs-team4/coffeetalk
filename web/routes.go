@@ -39,7 +39,7 @@ func setupRoutes() error {
 	// route.
 	for _, templateFile := range templates {
 		templateName := templateFile.Name()
-		log.Println(templateName)
+
 		parsedTemplate, err := template.ParseFS(
 			templatesFolder, templatesFolderName+"/"+templateName,
 		)
@@ -57,6 +57,8 @@ func setupRoutes() error {
 			if err != nil {
 				log.Printf("Template execution failed: %v\n", err)
 			}
+
+			log.Printf("Request to %v handled.\n", route)
 		})
 	}
 

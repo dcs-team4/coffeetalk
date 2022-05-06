@@ -19,6 +19,7 @@ func main() {
 	}
 
 	// Runs the web server (with TLS in if in production) until an error occurs.
+	log.Printf("Web server listening on port %v...\n", port)
 	if os.Getenv("ENV") == "production" {
 		err = listenAndServeTLS(":"+port, nil)
 	} else {

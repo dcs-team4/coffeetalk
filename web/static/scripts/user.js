@@ -1,19 +1,18 @@
 //@ts-check
 
+/** @type {string} */
 let username;
 
+/** @returns {{ name: string, ok: true } | { ok: false }} */
 export function getUsername() {
-  if (username) {
-    return { username, ok: true };
-  } else {
+  if (username === undefined || username == "") {
     return { ok: false };
   }
+
+  return { name: username, ok: true };
 }
 
-export function login(name) {
+/** @param {string} name */
+export function setUsername(name) {
   username = name;
-}
-
-export function logout() {
-  username = undefined;
 }

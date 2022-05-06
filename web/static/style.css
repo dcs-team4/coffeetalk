@@ -5,6 +5,11 @@ body {
   margin: 0;
 }
 
+video {
+  width: 240px;
+  height: 180px;
+}
+
 button {
   background-color: #89bd9e;
   border-radius: 5px;
@@ -39,8 +44,20 @@ input:focus {
   gap: 5px;
 }
 
+.wrap {
+  flex-wrap: wrap;
+}
+
 .bold {
   font-weight: bold;
+}
+
+.large-font {
+  font-size: large;
+}
+
+.extra-large-font {
+  font-size: xx-large;
 }
 
 .top-spacing {
@@ -58,30 +75,30 @@ input:focus {
 }
 
 .container {
-  max-width: 500px;
+  max-width: 1000px;
   margin-left: auto;
   margin-right: auto;
+}
+
+.video-name {
+  background-color: #f0c987;
+  color: #3c153b;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
 }
 
 #title-bar {
   justify-content: space-between;
   background-color: #db4c40;
-  font-size: xx-large;
 }
 
 #title-bar > * {
   width: 100%;
 }
 
-#quiz-bar {
+#login-bar,
+#quiz-bar,
+#leave-stream-bar {
   background-color: #8b1e3f;
-}
-
-#video-container {
-  display: flex;
-}
-
-#video-container video {
-  flex-grow: 1;
-  min-width: 250px;
 }

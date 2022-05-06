@@ -2,41 +2,61 @@
 <html>
   <head>
     <link rel="stylesheet" href="static/style.css" />
+    <!-- Twilio dependencies -->
+    <script src="https://media.twiliocdn.com/sdk/js/video/releases/2.3.0/twilio-video.min.js"></script>
+    <script src="https://media.twiliocdn.com/sdk/js/conversations/releases/1.0.0/twilio-conversations.min.js"></script>
+    <!-- Paho MQTT dependency -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js"></script>
+    <!-- Environment variable initialization -->
     <script type="text/javascript">
       const env = {{.}}
-      console.log(env);
     </script>
+    <!-- Main script -->
     <script type="module" src="static/scripts/index.js"></script>
   </head>
   <body>
     <div id="main">
       <div id="title-bar" class="bar flex">
-        <div class="bold">CoffeeTalk</div>
+        <div class="bold extra-large-font">CoffeeTalk</div>
+        <div class="row gap">
+          <div class="bold">Currently talking:</div>
+          <div id="participant-count"></div>
+        </div>
       </div>
-      <div id="quiz-bar" class="bar flex">
+      <div id="login-bar" class="bar flex">
         <div class="container">
+          <div id="login-error"></div>
           <div class="row gap">
             <div class="bold">Name:</div>
-            <input type="text" class="bold" />
+            <input id="username-input" type="text" class="bold" />
           </div>
           <button id="join-call" class="top-spacing">Join Call</button>
         </div>
       </div>
-      <div id="quiz-bar" class="bar flex">
+      <div id="quiz-bar" class="bar flex hide">
         <div class="container">
           <button id="start-quiz">Start Quiz</button>
-          <div class="row gap">
-            <div class="bold top-spacing hide">Question:</div>
+          <div id="quiz-title" class="large-font bold hide">Quiz</div>
+          <div id="quiz-question-title" class="row gap top-spacing hide">
+            <div class="bold">Question:</div>
             <div id="quiz-question"></div>
           </div>
-          <div class="row gap">
-            <div class="bold top-spacing hide">Answer:</div>
+          <div id="quiz-answer-title" class="row gap top-spacing hide">
+            <div class="bold">Answer:</div>
             <div id="quiz-answer"></div>
           </div>
         </div>
       </div>
-      <div id="video-container">
-        <video id="local-video" autoplay muted></video>
+      <div id="leave-stream-bar" class="bar flex hide">
+        <div class="container">
+          <button id="leave-stream">Leave Call</button>
+        </div>
+      </div>
+      <div id="video-container" class="row gap wrap">
+        <div>
+          <video id="local-video" autoplay muted></video>
+          <div class="video-name">Me</div>
+        </div>
       </div>
     </div>
   </body>
