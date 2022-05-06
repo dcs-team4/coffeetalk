@@ -56,9 +56,7 @@ func Start(socketPort string, tcpPort string) *mqtt.Server {
 func configureListener() *listeners.Config {
 	config := &listeners.Config{Auth: new(auth.Allow)}
 
-	env := os.Getenv("ENV")
-
-	if env == "production" {
+	if os.Getenv("ENV") == "production" {
 		tlsCertificate, err := tlsFiles.ReadFile("tls-cert.pem")
 		if err != nil {
 			log.Printf("TLS certificate setup failed: %v\n", err)

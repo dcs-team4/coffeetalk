@@ -20,11 +20,9 @@ type TLSConfig struct {
 func StartServer(port string) {
 	http.HandleFunc("/", connectSocket)
 
-	env := os.Getenv("ENV")
-
-	// Runs the server until an error is encountered.
+	// Runs the web server (with TLS in if in production) until an error occurs.
 	var err error
-	if env == "production" {
+	if os.Getenv("ENV") == "production" {
 		err = listenAndServeTLS(":"+port, nil)
 	} else {
 		err = http.ListenAndServe(":"+port, nil)

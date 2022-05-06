@@ -19,19 +19,13 @@ func main() {
 		port = "3000"
 	}
 
-	// Gets ENV environment variable, defaulting to "production" if not present.
-	env, ok := os.LookupEnv("ENV")
-	if !ok {
-		env = "production"
-	}
-
 	// Serves the HTML/CSS/JavaScript files inside the "public" folder from the root URL.
 	publicFiles, _ := fs.Sub(publicFolder, "public")
 	http.Handle("/", http.FileServer(http.FS(publicFiles)))
 
-	// Runs the web server (with TLS in if in production) until an error is encountered.
+	// Runs the web server (with TLS in if in production) until an error occurs.
 	var err error
-	if env == "production" {
+	if os.Getenv("ENV") == "production" {
 		err = listenAndServeTLS(":"+port, nil)
 	} else {
 		err = http.ListenAndServe(":"+port, nil)
