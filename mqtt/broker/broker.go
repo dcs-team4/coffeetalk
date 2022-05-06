@@ -57,13 +57,13 @@ func configureListener() *listeners.Config {
 	config := &listeners.Config{Auth: new(auth.Allow)}
 
 	if os.Getenv("ENV") == "production" {
-		tlsCertificate, err := tlsFiles.ReadFile("tls-cert.pem")
+		tlsCertificate, err := tlsFiles.ReadFile("tls/tls-cert.pem")
 		if err != nil {
 			log.Printf("TLS certificate setup failed: %v\n", err)
 			return config
 		}
 
-		tlsKey, err := tlsFiles.ReadFile("tls-key.pem")
+		tlsKey, err := tlsFiles.ReadFile("tls/tls-key.pem")
 		if err != nil {
 			log.Printf("TLS key setup failed: %v\n", err)
 			return config
