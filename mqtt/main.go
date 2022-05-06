@@ -26,7 +26,7 @@ func main() {
 
 	// Starts MQTT broker.
 	broker := broker.Start(socketPort, tcpPort)
-	log.Printf("Running MQTT broker on port %v (WebSocket) and %v (TCP)...\n", socketPort, tcpPort)
+	log.Printf("MQTT broker listening on ports %v (WebSocket) and %v (TCP)...\n", socketPort, tcpPort)
 
 	// Creates a new quiz state machine, runs it in a goroutine, and listens for start messages.
 	quizmachine := quiz.NewMachine(broker)
