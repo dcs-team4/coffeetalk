@@ -1,19 +1,30 @@
 version: "3"
 
 services:
-  frontend:
-    container_name: frontend
+  web:
+    container_name: web
     build:
-      context: ./frontend
+      context: ./web
       dockerfile: Dockerfile
     environment:
       - ENV=production
-      - ENV_FILE=.env
       - PORT=443
+      - WEBRTC_HOST=coffeetalk.hermannm.dev
+      - WEBRTC_PORT=8000
       - MQTT_HOST=coffeetalk.hermannm.dev
       - MQTT_PORT=1882
     ports:
       - 443:443
+  webrtc:
+    container_name: webrtc
+    build:
+      context: ./webrtc
+      dockerfile: Dockerfile
+    environment:
+      - ENV=production
+      - PORT=8000
+    ports:
+      - 8000:8000
   mqtt:
     container_name: mqtt
     build:

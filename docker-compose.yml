@@ -1,19 +1,30 @@
 version: "3"
 
 services:
-  frontend:
-    container_name: frontend
+  web:
+    container_name: web
     build:
-      context: ./frontend
+      context: ./web
       dockerfile: Dockerfile
     environment:
       - ENV=development
-      - ENV_FILE=.env
       - PORT=3000
+      - WEBRTC_HOST=localhost
+      - WEBRTC_PORT=8000
       - MQTT_HOST=localhost
       - MQTT_PORT=1882
     ports:
       - 3000:3000
+  webrtc:
+    container_name: webrtc
+    build:
+      context: ./webrtc
+      dockerfile: Dockerfile
+    environment:
+      - ENV=development
+      - PORT=8000
+    ports:
+      - 8000:8000
   mqtt:
     container_name: mqtt
     build:
