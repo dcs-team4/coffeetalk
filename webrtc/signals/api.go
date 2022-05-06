@@ -3,6 +3,7 @@ package signals
 import (
 	"log"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -16,13 +17,15 @@ type TLSConfig struct {
 }
 
 // Starts a WebRTC signaling server on the given port, optionally with TLS.
-func StartServer(port string, tlsConfig TLSConfig) {
+func StartServer(port string) {
 	http.HandleFunc("/", connectSocket)
+
+	env := os.Getenv("ENV")
 
 	// Runs the server until an error is encountered.
 	var err error
-	if tlsConfig.TLS {
-		err = http.ListenAndServeTLS(":"+port, tlsConfig.CertFile, tlsConfig.KeyFile, nil)
+	if env == "production" {
+		err = listenAndServeTLS(":"+port, nil)
 	} else {
 		err = http.ListenAndServe(":"+port, nil)
 	}

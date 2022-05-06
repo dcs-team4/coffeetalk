@@ -2,7 +2,7 @@
 package broker
 
 import (
-	_ "embed"
+	"embed"
 	"log"
 	"os"
 
@@ -12,13 +12,9 @@ import (
 	"github.com/mochi-co/mqtt/server/listeners/auth"
 )
 
-// Embedded file with TLS certificate.
-//go:embed tls-cert.pem
-var tlsCertificate []byte
-
-// Embedded file with TLS key.
-//go:embed tls-key.pem
-var tlsKey []byte
+// For production environment: expects tls-cert.pem and tls-key.pem in tls directory.
+//go:embed all:tls
+var tlsFiles embed.FS
 
 // Starts an MQTT broker that listens for WebSocket and TCP connections on the given ports.
 func Start(socketPort string, tcpPort string) *mqtt.Server {
@@ -63,6 +59,18 @@ func configureListener() *listeners.Config {
 	env := os.Getenv("ENV")
 
 	if env == "production" {
+		tlsCertificate, err := tlsFiles.ReadFile("tls-cert.pem")
+		if err != nil {
+			log.Printf("TLS certificate setup failed: %v\n", err)
+			return config
+		}
+
+		tlsKey, err := tlsFiles.ReadFile("tls-key.pem")
+		if err != nil {
+			log.Printf("TLS key setup failed: %v\n", err)
+			return config
+		}
+
 		config.TLS = &listeners.TLS{
 			Certificate: tlsCertificate,
 			PrivateKey:  tlsKey,

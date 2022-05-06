@@ -13,24 +13,6 @@ func main() {
 		port = "8000"
 	}
 
-	// Gets ENV environment variable, defaulting to "production" if not present.
-	env, ok := os.LookupEnv("ENV")
-	if !ok {
-		env = "production"
-	}
-
-	// Configures TLS for the server if in a production environment.
-	var tlsConfig signals.TLSConfig
-	if env == "production" {
-		tlsConfig = signals.TLSConfig{
-			TLS:      true,
-			CertFile: "tls-cert.pem",
-			KeyFile:  "tls-key.pem",
-		}
-	} else {
-		tlsConfig.TLS = false
-	}
-
 	// Starts the WebRTC signaling server.
-	signals.StartServer(port, tlsConfig)
+	signals.StartServer(port)
 }

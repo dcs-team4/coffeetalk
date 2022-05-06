@@ -32,7 +32,7 @@ func main() {
 	// Runs the web server (with TLS in if in production) until an error is encountered.
 	var err error
 	if env == "production" {
-		err = http.ListenAndServeTLS(":"+port, "tls-cert.pem", "tls-key.pem", nil)
+		err = listenAndServeTLS(":"+port, nil)
 	} else {
 		err = http.ListenAndServe(":"+port, nil)
 	}

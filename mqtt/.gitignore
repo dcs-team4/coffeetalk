@@ -1,2 +1,2 @@
-tls-cert.pem
-tls-key.pem
+/broker/tls/tls-cert.pem
+/broker/tls/tls-key.pem
