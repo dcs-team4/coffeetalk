@@ -14,12 +14,12 @@ var tlsFiles embed.FS
 // If handler is nil, uses http.DefaultServeMux.
 // Limited, alternate implementation of http.ListenAndServeTLS in order to use embedded files.
 func listenAndServeTLS(address string, handler http.Handler) error {
-	certFile, err := tlsFiles.ReadFile("tls-cert.pem")
+	certFile, err := tlsFiles.ReadFile("tls/tls-cert.pem")
 	if err != nil {
 		return err
 	}
 
-	keyFile, err := tlsFiles.ReadFile("tls-key.pem")
+	keyFile, err := tlsFiles.ReadFile("tls/tls-key.pem")
 	if err != nil {
 		return err
 	}
