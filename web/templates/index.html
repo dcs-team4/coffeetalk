@@ -2,12 +2,9 @@
 <html>
   <head>
     <link rel="stylesheet" href="static/style.css" />
-    <!-- Twilio dependencies -->
-    <script src="https://media.twiliocdn.com/sdk/js/video/releases/2.3.0/twilio-video.min.js"></script>
-    <script src="https://media.twiliocdn.com/sdk/js/conversations/releases/1.0.0/twilio-conversations.min.js"></script>
     <!-- Paho MQTT dependency -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js"></script>
-    <!-- Environment variable initialization -->
+    <!-- Environment variable initialization through Go's html/template package -->
     <script type="text/javascript">
       const env = {{.}}
     </script>
@@ -17,10 +14,12 @@
   <body>
     <div id="main">
       <div id="title-bar" class="bar flex">
-        <div class="bold extra-large-font">CoffeeTalk</div>
-        <div class="row gap">
-          <div class="bold">Currently talking:</div>
-          <div id="participant-count"></div>
+        <div class="container">
+          <div class="bold extra-large-font">CoffeeTalk</div>
+          <div class="row gap">
+            <div class="bold">Currently talking:</div>
+            <div id="participant-count"></div>
+          </div>
         </div>
       </div>
       <div id="login-bar" class="bar flex">

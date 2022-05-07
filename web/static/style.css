@@ -89,12 +89,7 @@ input:focus {
 }
 
 #title-bar {
-  justify-content: space-between;
   background-color: #db4c40;
-}
-
-#title-bar > * {
-  width: 100%;
 }
 
 #login-bar,
