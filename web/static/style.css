@@ -8,6 +8,15 @@ body {
 video {
   width: 240px;
   height: 180px;
+  display: block;
+}
+
+.video-name {
+  background-color: #f0c987;
+  color: #3c153b;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
 }
 
 button {
@@ -44,6 +53,10 @@ input:focus {
   gap: 5px;
 }
 
+.large-gap {
+  gap: 10px;
+}
+
 .wrap {
   flex-wrap: wrap;
 }
@@ -68,32 +81,27 @@ input:focus {
   display: none;
 }
 
-.bar {
-  padding: 10px;
-  align-items: center;
-  text-align: center;
-}
-
 .container {
   max-width: 1000px;
   margin-left: auto;
   margin-right: auto;
 }
 
-.video-name {
-  background-color: #f0c987;
-  color: #3c153b;
-  font-weight: bold;
+.bar {
+  align-items: center;
   text-align: center;
-  padding: 10px;
+}
+
+.action-bars {
+  background-color: #8b1e3f;
+  padding-top: 10px;
+}
+
+.action-bars > * {
+  padding: 0px 10px 10px 10px;
 }
 
 #title-bar {
   background-color: #db4c40;
-}
-
-#login-bar,
-#quiz-bar,
-#leave-stream-bar {
-  background-color: #8b1e3f;
+  padding: 10px;
 }

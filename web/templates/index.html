@@ -22,36 +22,38 @@
           </div>
         </div>
       </div>
-      <div id="login-bar" class="bar flex">
-        <div class="container">
-          <div id="login-error"></div>
-          <div class="row gap">
-            <div class="bold">Name:</div>
-            <input id="username-input" type="text" class="bold" />
-          </div>
-          <button id="join-call" class="top-spacing">Join Call</button>
-        </div>
-      </div>
-      <div id="quiz-bar" class="bar flex hide">
-        <div class="container">
-          <button id="start-quiz">Start Quiz</button>
-          <div id="quiz-title" class="large-font bold hide">Quiz</div>
-          <div id="quiz-question-title" class="row gap top-spacing hide">
-            <div class="bold">Question:</div>
-            <div id="quiz-question"></div>
-          </div>
-          <div id="quiz-answer-title" class="row gap top-spacing hide">
-            <div class="bold">Answer:</div>
-            <div id="quiz-answer"></div>
+      <div class="action-bars">
+        <div id="login-bar" class="bar flex">
+          <div class="container">
+            <div id="login-error"></div>
+            <div class="row gap">
+              <div class="bold">Name:</div>
+              <input id="username-input" type="text" class="bold" />
+            </div>
+            <button id="join-call" class="top-spacing">Join Call</button>
           </div>
         </div>
-      </div>
-      <div id="leave-stream-bar" class="bar flex hide">
-        <div class="container">
-          <button id="leave-stream">Leave Call</button>
+        <div id="quiz-bar" class="bar flex hide">
+          <div class="container">
+            <button id="start-quiz">Start Quiz</button>
+            <div id="quiz-title" class="large-font bold hide">Quiz</div>
+            <div id="quiz-question-title" class="row gap top-spacing hide">
+              <div class="bold">Question:</div>
+              <div id="quiz-question"></div>
+            </div>
+            <div id="quiz-answer-title" class="row gap top-spacing hide">
+              <div class="bold">Answer:</div>
+              <div id="quiz-answer"></div>
+            </div>
+          </div>
+        </div>
+        <div id="leave-stream-bar" class="bar flex hide">
+          <div class="container">
+            <button id="leave-stream">Leave Call</button>
+          </div>
         </div>
       </div>
-      <div id="video-container" class="row gap wrap">
+      <div id="video-container" class="row large-gap wrap top-spacing">
         <div>
           <video id="local-video" autoplay muted></video>
           <div class="video-name">Me</div>
