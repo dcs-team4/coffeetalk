@@ -72,6 +72,13 @@ func (user *User) LeaveStream() {
 	user.Lock.Lock()
 	defer user.Lock.Unlock()
 
+	user.HandleUserLeft()
+
+	user.Name = ""
+}
+
+// Sends a message to all other users that the given user has left the stream.
+func (user *User) HandleUserLeft() {
 	users.Lock.RLock()
 	defer users.Lock.RUnlock()
 
@@ -85,8 +92,6 @@ func (user *User) LeaveStream() {
 			Username:    user.Name,
 		})
 	}
-
-	user.Name = ""
 }
 
 // Returns the user of the given userID from the users map, or ok=false if not found.

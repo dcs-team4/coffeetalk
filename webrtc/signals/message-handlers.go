@@ -20,6 +20,10 @@ func (user *User) Listen(stop <-chan struct{}) {
 			if err != nil {
 				if _, ok := err.(*websocket.CloseError); ok {
 					log.Printf("Socket with client ID %v closed.\n", user.ID)
+
+					if user.Name != "" {
+						user.HandleUserLeft()
+					}
 				} else {
 					log.Printf("Could not read message: %v\n", err)
 				}
