@@ -55,7 +55,7 @@ func connectSocket(res http.ResponseWriter, req *http.Request) {
 
 	// Adds the requesting participant to the list of participants.
 	userID := addUser(user)
-	log.Printf("Added user with ID %v.\n", userID)
+	log.Printf("Connection established with client ID %v.\n", userID)
 
 	// Sets up a channel to stop listening on close.
 	stop := make(chan struct{}, 1)

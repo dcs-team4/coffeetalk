@@ -77,8 +77,12 @@ func (user *User) HandleMessage(rawMessage []byte) {
 			return
 		}
 
+		log.Printf("%v message received from: %v\n", MsgJoinStream, joinStream.Username)
+
 		user.JoinStream(joinStream.Username)
 	case MsgLeaveStream:
+		log.Printf("%v message received from: %v\n", MsgLeaveStream, user.Name)
+
 		user.LeaveStream()
 	}
 }
