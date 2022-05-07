@@ -1,5 +1,3 @@
-//@ts-check
-
 import "./dom.js";
 import "./user.js";
 import { connectSocket } from "./socket.js";

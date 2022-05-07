@@ -1,8 +1,5 @@
-//@ts-check
-
 import { messages, sendToServer } from "./socket.js";
 import { createPeerVideoElement, decrementParticipantCount, DOM } from "./dom.js";
-import { getUsername } from "./user.js";
 
 /**
  * @typedef {Object} Peer
@@ -30,22 +27,24 @@ export async function streamLocalVideo() {
     return;
   }
 
-  DOM.localVideo.srcObject = localStream;
+  DOM.localVideo().srcObject = localStream;
 }
 
 export function leaveCall() {
   for (const peer of Object.values(peers)) {
     peer.connection.close();
-    DOM.videoContainer.removeChild(peer.videoContainer);
+    if (peer.videoContainer) {
+      DOM.videoContainer().removeChild(peer.videoContainer);
+    }
   }
 
   for (const peerName in peers) {
     delete peers[peerName];
   }
 
-  DOM.leaveStreamBar.classList.add("hide");
-  DOM.quizBar.classList.add("hide");
-  DOM.loginBar.classList.remove("hide");
+  DOM.leaveStreamBar()?.classList.add("hide");
+  DOM.quizBar().classList.add("hide");
+  DOM.loginBar()?.classList.remove("hide");
 
   decrementParticipantCount();
 
@@ -104,10 +103,11 @@ export async function receiveVideoOffer(sender, sdp) {
   });
 }
 
-export async function receiveICECandidate(message) {
-  const candidate = new RTCIceCandidate(message.sdp);
+/** @param {string} sender, @param {RTCIceCandidateInit} sdp */
+export async function receiveICECandidate(sender, sdp) {
+  const candidate = new RTCIceCandidate(sdp);
 
-  const peer = peers[message.from];
+  const peer = peers[sender];
   if (!peer) return;
 
   try {
@@ -123,11 +123,11 @@ export function removePeerConnection(peerName) {
   const peer = peers[peerName];
 
   peer.connection.close();
-  if (peer.videoContainer) DOM.videoContainer.removeChild(peer.videoContainer);
+  if (peer.videoContainer) DOM.videoContainer().removeChild(peer.videoContainer);
   delete peers[peerName];
 }
 
-/** @returns {Peer} */
+/** @param {string} peerName, @returns {Peer} */
 export function createPeerConnection(peerName) {
   const peer = {
     connection: new RTCPeerConnection({
@@ -191,8 +191,11 @@ function handleTrack(event, peer, peerName) {
   peer.video.srcObject = event.streams[0];
 }
 
+/** @param {Peer} peer */
 function handleICEConnectionStateChange(peer) {}
 
+/** @param {Peer} peer */
 function handleICEGatheringStateChange(peer) {}
 
+/** @param {Peer} peer */
 function handleSignalingStateChange(peer) {}

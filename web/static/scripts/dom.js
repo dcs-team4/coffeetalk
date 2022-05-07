@@ -1,5 +1,3 @@
-//@ts-check
-
 import { messages, sendToServer } from "./socket.js";
 import { getUsername, setUsername } from "./user.js";
 import { connectMQTT, startQuiz } from "./mqtt.js";
@@ -7,36 +5,37 @@ import { leaveCall } from "./webrtc.js";
 
 /** DOM elements fetched on page load. */
 export const DOM = {
-  participantCount: document.getElementById("participant-count"),
-  loginBar: document.getElementById("login-bar"),
-  loginError: document.getElementById("login-error"),
-  usernameInput: /** @type {HTMLInputElement} */ (document.getElementById("username-input")),
-  joinCallButton: document.getElementById("join-call"),
-  quizBar: document.getElementById("quiz-bar"),
-  startQuizButton: document.getElementById("start-quiz"),
-  quizTitle: document.getElementById("quiz-title"),
-  quizQuestionTitle: document.getElementById("quiz-question-title"),
-  quizQuestion: document.getElementById("quiz-question"),
-  quizAnswerTitle: document.getElementById("quiz-answer-title"),
-  quizAnswer: document.getElementById("quiz-answer"),
-  leaveStreamBar: document.getElementById("leave-stream-bar"),
-  leaveStreamButton: document.getElementById("leave-stream"),
-  videoContainer: document.getElementById("video-container"),
-  localVideo: /** @type {HTMLVideoElement} */ (document.getElementById("local-video")),
+  participantCount: () => /** @type {HTMLElement} */ (document.getElementById("participant-count")),
+  errorField: () => /** @type {HTMLElement} */ (document.getElementById("error-field")),
+  loginBar: () => /** @type {?HTMLElement} */ document.getElementById("login-bar"),
+  usernameInput: () => /** @type {?HTMLInputElement} */ (document.getElementById("username-input")),
+  joinCallButton: () => /** @type {?HTMLElement} */ document.getElementById("join-call"),
+  quizBar: () => /** @type {HTMLElement} */ (document.getElementById("quiz-bar")),
+  startQuizButton: () => /** @type {HTMLElement} */ (document.getElementById("start-quiz")),
+  quizTitle: () => /** @type {HTMLElement} */ (document.getElementById("quiz-title")),
+  quizQuestionTitle: () =>
+    /** @type {HTMLElement} */ (document.getElementById("quiz-question-title")),
+  quizQuestion: () => /** @type {HTMLElement} */ (document.getElementById("quiz-question")),
+  quizAnswerTitle: () => /** @type {HTMLElement} */ (document.getElementById("quiz-answer-title")),
+  quizAnswer: () => /** @type {HTMLElement} */ (document.getElementById("quiz-answer")),
+  leaveStreamBar: () => /** @type {?HTMLElement} */ (document.getElementById("leave-stream-bar")),
+  leaveStreamButton: () => /** @type {?HTMLElement} */ (document.getElementById("leave-stream")),
+  videoContainer: () => /** @type {HTMLElement} */ (document.getElementById("video-container")),
+  localVideo: () => /** @type {HTMLVideoElement} */ (document.getElementById("local-video")),
 };
 
 registerListeners();
 
 function registerListeners() {
-  DOM.usernameInput.addEventListener("change", (event) => {
+  DOM.usernameInput()?.addEventListener("change", (event) => {
     setUsername(/** @type {HTMLInputElement} */ (event.target).value);
   });
 
-  DOM.joinCallButton.addEventListener("click", handleJoinCall);
+  DOM.joinCallButton()?.addEventListener("click", handleJoinCall);
 
-  DOM.startQuizButton.addEventListener("click", startQuiz);
+  DOM.startQuizButton().addEventListener("click", startQuiz);
 
-  DOM.leaveStreamButton.addEventListener("click", leaveCall);
+  DOM.leaveStreamButton()?.addEventListener("click", leaveCall);
 }
 
 /** @param {string} peerName, @returns {[HTMLVideoElement, HTMLElement]} */
@@ -52,7 +51,7 @@ export function createPeerVideoElement(peerName) {
   nameEl.classList.add("video-name");
   container.appendChild(nameEl);
 
-  DOM.videoContainer.appendChild(container);
+  DOM.videoContainer()?.appendChild(container);
 
   return [video, container];
 }
@@ -60,10 +59,10 @@ export function createPeerVideoElement(peerName) {
 function handleJoinCall() {
   const user = getUsername();
   if (!user.ok) {
-    DOM.loginError.innerText = "Invalid username";
+    DOM.errorField().innerText = "Invalid username";
     return;
   }
-  DOM.loginError.innerText = "";
+  DOM.errorField().innerText = "";
 
   sendToServer({
     type: messages.JOIN_STREAM,
@@ -74,26 +73,28 @@ function handleJoinCall() {
 
   incrementParticipantCount();
 
-  DOM.loginBar.classList.add("hide");
-  DOM.quizBar.classList.remove("hide");
-  DOM.leaveStreamBar.classList.remove("hide");
+  DOM.loginBar()?.classList.add("hide");
+  DOM.quizBar().classList.remove("hide");
+  DOM.leaveStreamBar()?.classList.remove("hide");
 }
 
 /** @param {number} value */
 export function setParticipantCount(value) {
-  DOM.participantCount.innerText = value.toString();
+  DOM.participantCount().innerText = value.toString();
 }
 
 export function incrementParticipantCount() {
-  const value = parseInt(DOM.participantCount.innerText) || 0;
-  DOM.participantCount.innerText = (value + 1).toString();
+  const count = DOM.participantCount();
+  const value = parseInt(count.innerText) || 0;
+  count.innerText = (value + 1).toString();
 }
 
 export function decrementParticipantCount() {
-  const value = parseInt(DOM.participantCount.innerText);
+  const count = DOM.participantCount();
+  const value = parseInt(count.innerText);
   if (!value) {
     return;
   }
 
-  DOM.participantCount.innerText = (value - 1).toString();
+  count.innerText = (value - 1).toString();
 }

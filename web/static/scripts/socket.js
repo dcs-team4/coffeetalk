@@ -1,5 +1,3 @@
-//@ts-check
-
 import { getUsername } from "./user.js";
 import {
   receiveICECandidate,
@@ -28,7 +26,13 @@ export function connectSocket() {
   console.log("Successfully connected to WebRTC signaling server.");
 }
 
+/** @param {any} message */
 export function sendToServer(message) {
+  if (!socket) {
+    console.log("Sending to server failed: socket uninitialized.");
+    return;
+  }
+
   console.log("Sending to server:", message);
   const serialized = JSON.stringify(message);
   socket.send(serialized);
@@ -59,7 +63,7 @@ function handleMessage(event) {
       receiveVideoAnswer(message.from, message.sdp);
       break;
     case messages.ICE_CANDIDATE:
-      receiveICECandidate(message);
+      receiveICECandidate(message.from, message.sdp);
       break;
     case messages.CONNECTION_SUCCESS:
       setParticipantCount(message.participantCount);
