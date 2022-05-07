@@ -9,10 +9,20 @@ import (
 	"net/http"
 )
 
-// Configures which HTML template files correspond to which routes on the website.
-var filesToRoutes = map[string]string{
-	"index.html":  "/",
-	"office.html": "/office",
+// Configures which HTML template files correspond to which routes on the website, and the client
+// type to pass to the web app as an environment variable.
+var routeConfig = map[string]struct {
+	route      string
+	clientType string
+}{
+	"index.html": {
+		route:      "/",
+		clientType: "home",
+	},
+	"office.html": {
+		route:      "/office",
+		clientType: "office",
+	},
 }
 
 // Embeds the "templates" folder in this Go binary, for easy processing and serving of HTML.
@@ -47,18 +57,18 @@ func setupRoutes() error {
 			return err
 		}
 
-		route, ok := filesToRoutes[templateName]
+		config, ok := routeConfig[templateName]
 		if !ok {
 			return errors.New("invalid route config")
 		}
 
-		http.HandleFunc(route, func(res http.ResponseWriter, req *http.Request) {
-			err := parsedTemplate.Execute(res, frontendEnv)
+		http.HandleFunc(config.route, func(res http.ResponseWriter, req *http.Request) {
+			err := parsedTemplate.Execute(res, makeEnv(config.clientType))
 			if err != nil {
 				log.Printf("Template execution failed: %v\n", err)
 			}
 
-			log.Printf("Request to %v handled.\n", route)
+			log.Printf("Request to %v handled.\n", config.route)
 		})
 	}
 

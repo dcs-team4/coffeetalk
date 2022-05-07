@@ -8,10 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/diffyjs@1.3.5/dist/diffy.min.js"></script>
     <!-- Environment variable initialization through Go's html/template package -->
     <script type="text/javascript">
-      const env = {{.}}
+      let env = {{.}}
     </script>
     <!-- Main script -->
-    <script type="module" src="static/scripts/index.js"></script>
+    <script type="module" src="static/scripts/main.js"></script>
   </head>
   <body>
     <div id="main">
@@ -22,19 +22,10 @@
             <div class="bold">Currently talking:</div>
             <div id="participant-count"></div>
           </div>
+          <div id="error-field" class="bold"></div>
         </div>
       </div>
       <div class="action-bars">
-        <div id="login-bar" class="bar flex">
-          <div class="container">
-            <div id="login-error"></div>
-            <div class="row gap">
-              <div class="bold">Name:</div>
-              <input id="username-input" type="text" class="bold" />
-            </div>
-            <button id="join-call" class="top-spacing">Join Call</button>
-          </div>
-        </div>
         <div id="quiz-bar" class="bar flex hide">
           <div class="container">
             <button id="start-quiz">Start Quiz</button>
@@ -49,16 +40,11 @@
             </div>
           </div>
         </div>
-        <div id="leave-stream-bar" class="bar flex hide">
-          <div class="container">
-            <button id="leave-stream">Leave Call</button>
-          </div>
-        </div>
       </div>
       <div id="video-container" class="row large-gap wrap top-spacing">
         <div>
           <video id="local-video" autoplay muted></video>
-          <div class="video-name">Me</div>
+          <div id="local-video-name" class="video-name">Me</div>
         </div>
       </div>
     </div>

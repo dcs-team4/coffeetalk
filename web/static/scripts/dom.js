@@ -22,6 +22,7 @@ export const DOM = {
   leaveStreamButton: () => /** @type {?HTMLElement} */ (document.getElementById("leave-stream")),
   videoContainer: () => /** @type {HTMLElement} */ (document.getElementById("video-container")),
   localVideo: () => /** @type {HTMLVideoElement} */ (document.getElementById("local-video")),
+  localVideoName: () => /** @type {HTMLElement} */ (document.getElementById("local-video-name")),
 };
 
 registerListeners();
@@ -31,11 +32,11 @@ function registerListeners() {
     setUsername(/** @type {HTMLInputElement} */ (event.target).value);
   });
 
-  DOM.joinCallButton()?.addEventListener("click", handleJoinCall);
-
-  DOM.startQuizButton().addEventListener("click", startQuiz);
+  DOM.joinCallButton()?.addEventListener("click", joinCall);
 
   DOM.leaveStreamButton()?.addEventListener("click", leaveCall);
+
+  DOM.startQuizButton().addEventListener("click", startQuiz);
 }
 
 /** @param {string} peerName, @returns {[HTMLVideoElement, HTMLElement]} */
@@ -56,7 +57,7 @@ export function createPeerVideoElement(peerName) {
   return [video, container];
 }
 
-function handleJoinCall() {
+export function joinCall() {
   const user = getUsername();
   if (!user.ok) {
     DOM.errorField().innerText = "Invalid username";

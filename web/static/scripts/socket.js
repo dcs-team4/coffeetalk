@@ -16,9 +16,9 @@ import {
 let socket;
 
 export function connectSocket() {
-  const protocol = env?.ENV === "production" ? "wss" : "ws";
-  const host = env?.MQTT_HOST ?? "localhost";
-  const port = env?.WEBRTC_PORT ?? "8000";
+  const protocol = env.ENV === "production" ? "wss" : "ws";
+  const host = env.MQTT_HOST;
+  const port = env.WEBRTC_PORT;
   const serverURL = `${protocol}://${host}:${port}`;
 
   socket = new WebSocket(serverURL);

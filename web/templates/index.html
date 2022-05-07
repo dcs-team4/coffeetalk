@@ -6,10 +6,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js"></script>
     <!-- Environment variable initialization through Go's html/template package -->
     <script type="text/javascript">
-      const env = {{.}}
+      let env = {{.}}
     </script>
     <!-- Main script -->
-    <script type="module" src="static/scripts/index.js"></script>
+    <script type="module" src="static/scripts/main.js"></script>
   </head>
   <body>
     <div id="main">

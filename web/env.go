@@ -16,6 +16,15 @@ var frontendEnvNames = []string{
 // Environment variables passed to the frontend.
 var frontendEnv map[string]string = prepareEnv(frontendEnvNames)
 
+func makeEnv(clientType string) map[string]string {
+	env := make(map[string]string)
+	for key, value := range frontendEnv {
+		env[key] = value
+	}
+	env["CLIENT_TYPE"] = clientType
+	return env
+}
+
 // Goes through the given envNames, checks if an environment variable is defined for each,
 // and if it is, adds it to the returned map.
 func prepareEnv(envNames []string) map[string]string {
