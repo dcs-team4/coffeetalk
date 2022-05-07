@@ -1,3 +1,10 @@
+# VSCode local settings files
+.vscode
+*.code-workspace
+
+# Node.js folder for JavaScript modules.
+node_modules
+
 # Python virtual environment files
 venv
 .python-version
@@ -5,6 +12,6 @@ venv
 # Python cache
 __pycache__
 
-# VSCode local settings files
-.vscode
-*.code-workspace
+# TLS certificate files for production environment.
+tls-cert.pem
+tls-key.pem
