@@ -5,13 +5,6 @@
 # Node.js folder for JavaScript modules.
 node_modules
 
-# Python virtual environment files
-venv
-.python-version
-
-# Python cache
-__pycache__
-
 # TLS certificate files for production environment.
 tls-cert.pem
 tls-key.pem
