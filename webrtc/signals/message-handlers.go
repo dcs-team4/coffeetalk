@@ -38,8 +38,6 @@ func (user *User) Listen(stop <-chan struct{}) {
 
 // Handles the incoming message from the given user.
 func (user *User) HandleMessage(rawMessage []byte) {
-	log.Printf("Received message: %v\n", string(rawMessage))
-
 	// First deserializes the message to a BaseMessage for checking its message type.
 	var baseMessage BaseMessage
 	err := json.Unmarshal(rawMessage, &baseMessage)
