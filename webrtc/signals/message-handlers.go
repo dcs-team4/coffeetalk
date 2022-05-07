@@ -7,16 +7,28 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Forever listens for WebSocket messages from the given user, and forwards them to HandleMessage.
-func (user *User) Listen() {
+// Listens for WebSocket messages from the given user, and forwards them to HandleMessage.
+// Stops when it receives on the stop channel.
+func (user *User) Listen(stop <-chan struct{}) {
 	for {
-		_, message, err := user.Socket.ReadMessage()
-		if err != nil {
-			log.Printf("Could not read message: %v\n", err)
-			continue
-		}
+		select {
+		case <-stop:
+			return
+		default:
+			_, message, err := user.Socket.ReadMessage()
 
-		user.HandleMessage(message)
+			if err != nil {
+				if _, ok := err.(*websocket.CloseError); ok {
+					log.Printf("Socket with client ID %v closed.\n", user.ID)
+				} else {
+					log.Printf("Could not read message: %v\n", err)
+				}
+
+				continue
+			}
+
+			user.HandleMessage(message)
+		}
 	}
 }
 

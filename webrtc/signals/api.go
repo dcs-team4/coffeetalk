@@ -57,11 +57,15 @@ func connectSocket(res http.ResponseWriter, req *http.Request) {
 	userID := addUser(user)
 	log.Printf("Added user with ID %v.\n", userID)
 
+	// Sets up a channel to stop listening on close.
+	stop := make(chan struct{}, 1)
+
 	// Spawns a goroutine for handling messages from the user.
-	go user.Listen()
+	go user.Listen(stop)
 
 	// Adds a handler for removing the participant when the socket is closed.
 	socket.SetCloseHandler(func(code int, text string) error {
+		stop <- struct{}{}
 		removeUser(userID)
 		return nil
 	})
