@@ -38,6 +38,10 @@ export function connectMQTT() {
       case mqttChannels.QUESTIONS:
         DOM.quizQuestion.innerText = message.payloadString;
         DOM.quizAnswer.innerText = "";
+        DOM.startQuizButton.classList.add("hide");
+        DOM.quizTitle.classList.remove("hide");
+        DOM.quizQuestionTitle.classList.remove("hide");
+        DOM.quizAnswerTitle.classList.remove("hide");
         break;
       case mqttChannels.ANSWERS:
         DOM.quizAnswer.innerText = message.payloadString;
@@ -45,10 +49,6 @@ export function connectMQTT() {
       case mqttChannels.STATUS:
         switch (message.payloadString) {
           case mqttMessages.START:
-            DOM.startQuizButton.classList.add("hide");
-            DOM.quizTitle.classList.remove("hide");
-            DOM.quizQuestionTitle.classList.remove("hide");
-            DOM.quizAnswerTitle.classList.remove("hide");
             break;
           case mqttMessages.END:
             DOM.quizTitle.classList.add("hide");
