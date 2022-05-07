@@ -24,6 +24,7 @@ func (user *User) Listen(stop <-chan struct{}) {
 					if user.Name != "" {
 						user.HandleUserLeft()
 					}
+					return
 				} else {
 					log.Printf("Could not read message: %v\n", err)
 				}
