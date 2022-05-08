@@ -21,9 +21,13 @@ export function connectSocket() {
   const port = env.WEBRTC_PORT;
   const serverURL = `${protocol}://${host}:${port}`;
 
-  socket = new WebSocket(serverURL);
-  socket.addEventListener("message", handleMessage);
-  console.log("Successfully connected to WebRTC signaling server.");
+  try {
+    socket = new WebSocket(serverURL);
+    socket.addEventListener("message", handleMessage);
+    console.log("Successfully connected to WebRTC signaling server.");
+  } catch (error) {
+    console.log(`Socket connection to WebRTC signaling server failed: ${error}`);
+  }
 }
 
 /** @param {any} message */
