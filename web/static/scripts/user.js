@@ -12,7 +12,7 @@ let username;
  * @returns {{ name: string, ok: true } | { ok: false }}
  */
 export function getUsername() {
-  if (username === undefined || username == "") {
+  if (!username) {
     return { ok: false };
   }
 
