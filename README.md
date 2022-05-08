@@ -12,13 +12,16 @@ CoffeeTalk is an inter-office communication system using WebRTC, WebSockets and 
 
 The project provides 3 servers, all written in [Go](https://go.dev/), with a Docker container configured for each.
 
-- `/web` contains a web server, serving the CoffeeTalk web app from the `templates` and `static` folders. The web app itself is written in vanilla HTML/CSS/JavaScript, with most of its logic in `/web/static/scripts`.
-  - `/server` sets up the web server, defines the app's routes, and configures TLS and web app environment.
+- `/web` contains a web server, serving the CoffeeTalk web app.
+  - `/server` sets up the web server, defines the app's routes, and configures TLS and app environment.
+  - `/templates` contains the HTML template files for the app's pages.
+  - `/static` contains the static JavaScript and CSS files for the web app.
+    - `/scripts` contains the client application logic, written in vanilla JavaScript and using JSDoc for type hinting. `main.js` is the app's entry point.
   - When served, the web app can be accessed through two routes:
     - `/` is the default app for users accessing CoffeeTalk from home, letting them choose a name and join the talk.
-    - `/office` is intended for offices to set up CoffeeTalk on a computer in a break room, and have it automatically join the talk when motion is detected (the [Diffy.js](https://github.com/maniart/diffyjs#readme) library is used for this).
+    - `/office` is intended for offices to set up CoffeeTalk on a computer in a break room, and have it automatically join the talk when motion is detected (using the [Diffy.js](https://github.com/maniart/diffyjs#readme) library).
 - `/webrtc` contains a WebRTC signaling server for coordinating peer-to-peer video and audio streaming between clients. It establishes WebSocket connections with clients for persistent two-way communication and message forwarding.
-  - `/signals` contains the main signaling logic.
+  - `/signals` sets up the socket connection API and defines the signaling messages passed between clients.
 - `/mqtt` contains a server for running quiz sessions over MQTT.
   - `/broker` wraps around the [mochi-co/mqtt](https://github.com/mochi-co/mqtt#readme) package to set up an MQTT broker.
   - `/quiz` defines a state machine for running quiz sessions, publishing questions and answers to the broker.
