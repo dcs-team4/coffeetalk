@@ -44,11 +44,12 @@ func (user *User) HandleMessage(rawMessage []byte) {
 	err := json.Unmarshal(rawMessage, &baseMessage)
 	if err != nil {
 		errMsg := "Invalid message"
-		user.Socket.WriteJSON(NewErrorMessage(errMsg))
+		user.Socket.WriteJSON(ErrorMessage{BaseMessage{Type: MsgError}, errMsg})
 		log.Printf("%v: %v\n", errMsg, err)
 		return
 	}
 
+	// Handles the message according to its type.
 	switch baseMessage.Type {
 	// Fallthrough because video offer, answer and ICE Candidate messages are all handled the same.
 	case MsgVideoOffer:
@@ -83,6 +84,8 @@ func (user *User) HandleMessage(rawMessage []byte) {
 		log.Printf("%v message received from: %v\n", MsgLeaveStream, user.Name)
 
 		user.LeaveStream()
+	default:
+		log.Printf("Unrecognized message type received: %v\n", baseMessage.Type)
 	}
 }
 
@@ -94,7 +97,7 @@ func DeserializeMsg(rawMessage []byte, pointer any, sender *User) (ok bool) {
 
 	if err != nil {
 		errMsg := "Invalid message received"
-		sender.Socket.WriteJSON(NewErrorMessage(errMsg))
+		sender.Socket.WriteJSON(ErrorMessage{BaseMessage{Type: MsgError}, errMsg})
 		log.Printf("%v: %v\n", errMsg, err)
 		return false
 	}
@@ -109,7 +112,7 @@ func (msg *TargetedMessage) Validate(sender *User) (target *websocket.Conn, ok b
 
 	if !ok {
 		errMsg := "Invalid message target"
-		sender.Socket.WriteJSON(NewErrorMessage(errMsg))
+		sender.Socket.WriteJSON(ErrorMessage{BaseMessage{Type: MsgError}, errMsg})
 		log.Printf("%v: %v\n", errMsg, msg.To)
 		return nil, false
 	}

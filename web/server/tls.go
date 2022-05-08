@@ -12,7 +12,6 @@ var tlsFiles embed.FS
 
 // Listens and serves on the given address, using embedded TLS certificate and key files.
 // If handler is nil, uses http.DefaultServeMux.
-// Limited, alternate implementation of http.ListenAndServeTLS in order to use embedded files.
 func listenAndServeTLS(address string, handler http.Handler) error {
 	certFile, err := tlsFiles.ReadFile("tls/tls-cert.pem")
 	if err != nil {
@@ -29,11 +28,11 @@ func listenAndServeTLS(address string, handler http.Handler) error {
 		return err
 	}
 
-	tlsConfig := tls.Config{
-		NextProtos:   []string{"http/1.1"},
-		Certificates: []tls.Certificate{certificate},
+	server := &http.Server{
+		Addr:      address,
+		Handler:   handler,
+		TLSConfig: &tls.Config{Certificates: []tls.Certificate{certificate}},
 	}
 
-	server := &http.Server{Addr: address, Handler: handler, TLSConfig: &tlsConfig}
 	return server.ListenAndServeTLS("", "")
 }

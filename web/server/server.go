@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-// Serves a web app from the given static and template directories on the given address.
+// Serves a website from the given static and template directories on the given address.
 func Serve(address string, staticDir fs.FS, templatesDir fs.FS) error {
 	err := setupRoutes(staticDir, templatesDir)
 	if err != nil {

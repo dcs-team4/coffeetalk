@@ -10,5 +10,5 @@ WORKDIR /app
 COPY . ./
 RUN go build -o /coffeetalk-mqtt
 
-# Run binary.
+# Runs binary.
 CMD [ "/coffeetalk-mqtt" ]

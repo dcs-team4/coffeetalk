@@ -1,6 +1,7 @@
 version: "3"
 
 services:
+  # Container for the CoffeeTalk web server.
   web:
     container_name: web
     build:
@@ -15,6 +16,8 @@ services:
       - MQTT_PORT=1882
     ports:
       - 443:443
+
+  # Container for the CoffeeTalk WebRTC signaling server.
   webrtc:
     container_name: webrtc
     build:
@@ -25,6 +28,8 @@ services:
       - PORT=8000
     ports:
       - 8000:8000
+
+  # Container for the Coffeetalk MQTT quiz server.
   mqtt:
     container_name: mqtt
     build:

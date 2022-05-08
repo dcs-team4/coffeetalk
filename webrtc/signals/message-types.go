@@ -36,8 +36,9 @@ type VideoExchangeMessage struct {
 	BaseMessage     // Type: MsgVideoOffer/MsgVideoAnswer/MsgICECandidate.
 	TargetedMessage // Sender and receiver of video offer/answer.
 
-	// Session Description Protocol string: Describes a client's video stream config in order to
+	// Session Description Protocol object: Describes a client's video stream config in order to
 	// properly set up a peer-to-peer stream.
+	// Typed as any, as the server only forwards the message and does not care about its type.
 	SDP any `json:"sdp"`
 }
 
@@ -62,12 +63,4 @@ type ErrorMessage struct {
 	BaseMessage // Type: MsgError
 
 	ErrorMessage string `json:"errorMessage"`
-}
-
-// Utility function for constructing a new ErrorMessage.
-func NewErrorMessage(errMsg string) ErrorMessage {
-	return ErrorMessage{
-		BaseMessage:  BaseMessage{Type: MsgError},
-		ErrorMessage: errMsg,
-	}
 }

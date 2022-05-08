@@ -6,7 +6,6 @@ import (
 
 // Client environment variables configured on the server.
 const (
-	// Type of web app: "home" / "office"
 	envClientType = "CLIENT_TYPE"
 )
 

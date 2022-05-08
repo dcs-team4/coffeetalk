@@ -13,7 +13,7 @@ var users = Users{
 	Lock: &sync.RWMutex{},
 }
 
-// Map user IDs to users connected to the server, with a mutex for thread-safe modification.
+// Map of user IDs to users connected to the server, with a mutex for thread-safe modification.
 type Users struct {
 	Map  map[int]*User
 	Lock *sync.RWMutex
@@ -32,8 +32,7 @@ func (user User) InStream() bool {
 	return user.Name != ""
 }
 
-// Sets the given user's name to the given username,
-// and signals other users that a new user has joined.
+// Sets the user's name to the given username, and notifies other users that a new user has joined.
 func (user *User) JoinStream(username string) error {
 	if username == "" {
 		return errors.New("Username cannot be blank.")
@@ -58,10 +57,7 @@ func (user *User) JoinStream(username string) error {
 			continue
 		}
 
-		otherUser.Socket.WriteJSON(NameMessage{
-			BaseMessage: BaseMessage{Type: MsgUserJoined},
-			Username:    username,
-		})
+		otherUser.Socket.WriteJSON(NameMessage{BaseMessage{Type: MsgUserJoined}, username})
 	}
 
 	return nil
@@ -87,10 +83,7 @@ func (user *User) HandleUserLeft() {
 			continue
 		}
 
-		otherUser.Socket.WriteJSON(NameMessage{
-			BaseMessage: BaseMessage{Type: MsgUserLeft},
-			Username:    user.Name,
-		})
+		otherUser.Socket.WriteJSON(NameMessage{BaseMessage{Type: MsgUserLeft}, user.Name})
 	}
 }
 

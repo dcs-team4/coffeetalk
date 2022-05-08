@@ -9,18 +9,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Optional configuration for TLS on the signaling server.
-type TLSConfig struct {
-	TLS      bool   // Whether TLS is enabled.
-	CertFile string // Path to TLS certificate file.
-	KeyFile  string // Path to TLS key file.
-}
-
-// Starts a WebRTC signaling server on the given port, optionally with TLS.
+// Starts a WebRTC signaling server on the given port.
 func StartServer(port string) {
 	http.HandleFunc("/", connectSocket)
 
-	// Runs the web server (with TLS in if in production) until an error occurs.
+	// Runs the signaling server (with TLS in if in production) until an error occurs.
 	var err error
 	if os.Getenv("ENV") == "production" {
 		err = listenAndServeTLS(":"+port, nil)
@@ -32,7 +25,7 @@ func StartServer(port string) {
 	}
 }
 
-// HTTP handler for establishing a WebSocket connection to the server.
+// HTTP handler for clients establishing a WebSocket connection to the server.
 func connectSocket(res http.ResponseWriter, req *http.Request) {
 	// Upgrades the request to a WebSocket connection.
 	upgrader := websocket.Upgrader{
@@ -80,7 +73,6 @@ func connectSocket(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 	socket.WriteJSON(ConnectionSuccessMessage{
-		BaseMessage:      BaseMessage{Type: MsgConnectionSuccess},
-		ParticipantCount: participantCount,
+		BaseMessage{Type: MsgConnectionSuccess}, participantCount,
 	})
 }

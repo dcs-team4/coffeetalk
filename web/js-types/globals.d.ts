@@ -1,7 +1,9 @@
+/** Object with environment variables passed from the server through the HTML template. */
 declare let env: {
   [envName: string]: string;
 };
 
+/** Diffy.js library. Minimally typed here due to lack of official type declarations. */
 declare module Diffy {
   export function create(args: { onFrame: (matrix: number[][]) => void; [key: string]: any }): any;
 }

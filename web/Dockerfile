@@ -10,5 +10,5 @@ WORKDIR /app
 COPY . ./
 RUN go build -o /coffeetalk-web
 
-# Run binary.
+# Runs binary.
 CMD [ "/coffeetalk-web" ]

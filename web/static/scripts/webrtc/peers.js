@@ -1,5 +1,5 @@
 import { messages, sendWebRTCMessage } from "./socket.js";
-import { createPeerVideoElement, decrementParticipantCount, displayLogin, DOM } from "../dom.js";
+import { DOM, createPeerVideoElement } from "../dom.js";
 
 /**
  * Type for object containing WebRTC connection to peer in the stream, and the video element for
