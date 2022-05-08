@@ -37,6 +37,8 @@ The below deployment diagram shows the components in the system and the relation
 
 ## Local setup
 
+To run the project locally, follow these steps:
+
 1. Install and open Docker Desktop: https://www.docker.com/products/docker-desktop/
 
 2. Clone the repository, and navigate into it:
@@ -53,6 +55,24 @@ docker compose up --build
 ```
 
 The web application should now be accessible at `localhost:3000`, with the WebRTC signaling server listening on `localhost:8000`, and the MQTT broker served over WebSocket at `localhost:1882` and TCP at `localhost:1883`.
+
+### Type Hinting
+
+The web app uses [JSDoc](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) for type hinting its JavaScript files, configured in `/web/jsconfig.json`. It uses `npm` to fetch type declarations for external libraries. To set this up for local development, follow these steps:
+
+1. Install Node.js (includes `npm`): https://nodejs.org/en/
+
+2. From `coffeetalk`, navigate to `web`:
+
+```
+cd web
+```
+
+3. Install project dependencies (in this case, external type declarations):
+
+```
+npm ci
+```
 
 ## Credits
 
