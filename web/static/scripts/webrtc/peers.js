@@ -137,20 +137,6 @@ export async function receiveICECandidate(sender, sdp) {
   }
 }
 
-/** Closes every peer connection, removes their video elements, and clears the peers state. */
-export function closePeerConnections() {
-  for (const peer of Object.values(peers)) {
-    peer.connection.close();
-    if (peer.videoContainer) {
-      DOM.videoContainer().removeChild(peer.videoContainer);
-    }
-  }
-
-  for (const peerName in peers) {
-    delete peers[peerName];
-  }
-}
-
 /**
  * Closes peer connection with the given peer, removing their video and updating the peers state.
  * @param {string} peerName
@@ -159,9 +145,34 @@ export function closePeerConnection(peerName) {
   const peer = getPeer(peerName);
   if (!peer.ok) return;
 
+  // Stops the video stream.
+  if (peer.video) {
+    peer.video.pause();
+    for (const track of /** @type {MediaStream} */ (peer.video.srcObject)?.getTracks()) {
+      track.stop();
+    }
+  }
+
+  // Remove video from the DOM.
+  if (peer.videoContainer) {
+    DOM.videoContainer().removeChild(peer.videoContainer);
+  }
+
+  // Stop peer-to-peer communication.
+  for (const transceiver of peer.connection.getTransceivers()) {
+    transceiver.stop();
+  }
+
+  // Close connection and clear peer.
   peer.connection.close();
-  if (peer.videoContainer) DOM.videoContainer().removeChild(peer.videoContainer);
   delete peers[peerName];
+}
+
+/** Closes every peer connection. */
+export function closePeerConnections() {
+  for (const peerName in peers) {
+    closePeerConnection(peerName);
+  }
 }
 
 /**
@@ -182,14 +193,21 @@ export function createPeerConnection(peerName) {
   const peer = { connection };
 
   // Registers event handlers.
-  connection.addEventListener("icecandidate", (event) => handleICECandidate(event, peerName));
-  connection.addEventListener("track", (event) => handleTrack(event, peer, peerName));
-  connection.addEventListener("negotiationneeded", () => handleNegotiationNeeded(peer, peerName));
+  connection.addEventListener("icecandidate", (event) => {
+    handleICECandidate(event, peerName);
+  });
+  connection.addEventListener("track", (event) => {
+    handleTrack(event, peer, peerName);
+  });
+  connection.addEventListener("negotiationneeded", () => {
+    handleNegotiationNeeded(peer, peerName);
+  });
   connection.addEventListener("iceconnectionstatechange", () =>
-    handleICEConnectionStateChange(peer)
+    handleICEConnectionStateChange(peer, peerName)
   );
-  connection.addEventListener("icegatheringstatechange", () => handleICEGatheringStateChange(peer));
-  connection.addEventListener("signalingstatechange", () => handleSignalingStateChange(peer));
+  connection.addEventListener("signalingstatechange", () =>
+    handleSignalingStateChange(peer, peerName)
+  );
 
   // Adds the peer to the peers state.
   peers[peerName] = peer;
@@ -245,11 +263,25 @@ function handleTrack(event, peer, peerName) {
   peer.video.srcObject = event.streams[0];
 }
 
-/** @param {Peer} peer */
-function handleICEConnectionStateChange(peer) {}
+/**
+ * Handles changes in the ICE connection state with the given peer.
+ * @param {Peer} peer, @param {string} peerName
+ */
+function handleICEConnectionStateChange(peer, peerName) {
+  switch (peer.connection.iceConnectionState) {
+    case "closed":
+    case "failed":
+      closePeerConnection(peerName);
+      break;
+  }
+}
 
-/** @param {Peer} peer */
-function handleICEGatheringStateChange(peer) {}
-
-/** @param {Peer} peer */
-function handleSignalingStateChange(peer) {}
+/**
+ * Handles changes in the signaling state with the given peer.
+ * @param {Peer} peer, @param {string} peerName
+ */
+function handleSignalingStateChange(peer, peerName) {
+  if (peer.connection.signalingState === "closed") {
+    closePeerConnection(peerName);
+  }
+}
