@@ -40,7 +40,7 @@ if (env.CLIENT_TYPE === "office") {
       const secondsSinceLastMotion = Math.floor(now.getSeconds() - lastMotionTime.getSeconds());
 
       // Checks for motion in the past two minutes, and joins/leaves the call accordingly.
-      if (secondsSinceLastMotion >= 10) {
+      if (secondsSinceLastMotion >= 120) {
         if (motionActive) {
           leaveCall();
           motionActive = false;
