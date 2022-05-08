@@ -44,7 +44,7 @@ func (user *User) HandleMessage(rawMessage []byte) {
 	err := json.Unmarshal(rawMessage, &baseMessage)
 	if err != nil {
 		errMsg := "Invalid message"
-		user.Socket.WriteJSON(ErrorMessage{BaseMessage{Type: MsgError}, errMsg})
+		user.Socket.WriteJSON(ErrorMessage{BaseMessage{MsgError}, errMsg})
 		log.Printf("%v: %v\n", errMsg, err)
 		return
 	}
@@ -97,7 +97,7 @@ func DeserializeMsg(rawMessage []byte, pointer any, sender *User) (ok bool) {
 
 	if err != nil {
 		errMsg := "Invalid message received"
-		sender.Socket.WriteJSON(ErrorMessage{BaseMessage{Type: MsgError}, errMsg})
+		sender.Socket.WriteJSON(ErrorMessage{BaseMessage{MsgError}, errMsg})
 		log.Printf("%v: %v\n", errMsg, err)
 		return false
 	}
@@ -112,7 +112,7 @@ func (msg *TargetedMessage) Validate(sender *User) (target *websocket.Conn, ok b
 
 	if !ok {
 		errMsg := "Invalid message target"
-		sender.Socket.WriteJSON(ErrorMessage{BaseMessage{Type: MsgError}, errMsg})
+		sender.Socket.WriteJSON(ErrorMessage{BaseMessage{MsgError}, errMsg})
 		log.Printf("%v: %v\n", errMsg, msg.To)
 		return nil, false
 	}

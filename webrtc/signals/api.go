@@ -72,7 +72,5 @@ func connectSocket(res http.ResponseWriter, req *http.Request) {
 			participantCount++
 		}
 	}
-	socket.WriteJSON(ConnectionSuccessMessage{
-		BaseMessage{Type: MsgConnectionSuccess}, participantCount,
-	})
+	socket.WriteJSON(ConnectionSuccessMessage{BaseMessage{MsgConnectionSuccess}, participantCount})
 }
