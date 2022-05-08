@@ -155,7 +155,7 @@ export function closePeerConnection(peerName) {
 
   // Remove video from the DOM.
   if (peer.videoContainer) {
-    DOM.videoContainer().removeChild(peer.videoContainer);
+    DOM.videos().removeChild(peer.videoContainer);
   }
 
   // Stop peer-to-peer communication.

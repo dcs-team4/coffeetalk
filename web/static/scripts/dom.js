@@ -23,7 +23,7 @@ export const DOM = Object.freeze({
   quizAnswer: () => /** @type {HTMLElement} */ (document.getElementById("quiz-answer")),
   leaveStreamBar: () => /** @type {?HTMLElement} */ (document.getElementById("leave-stream-bar")),
   leaveStreamButton: () => /** @type {?HTMLElement} */ (document.getElementById("leave-stream")),
-  videoContainer: () => /** @type {HTMLElement} */ (document.getElementById("video-container")),
+  videos: () => /** @type {HTMLElement} */ (document.getElementById("videos")),
   localVideo: () => /** @type {HTMLVideoElement} */ (document.getElementById("local-video")),
   localVideoName: () => /** @type {HTMLElement} */ (document.getElementById("local-video-name")),
 });
@@ -61,7 +61,7 @@ export function createPeerVideoElement(peerName) {
   name.classList.add("video-name");
   container.appendChild(name);
 
-  DOM.videoContainer()?.appendChild(container);
+  DOM.videos()?.appendChild(container);
 
   return { video, container };
 }
