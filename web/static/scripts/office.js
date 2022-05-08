@@ -1,8 +1,10 @@
 import { setUsername } from "./user.js";
-import { DOM, joinCall } from "./dom.js";
-import { leaveCall } from "./webrtc.js";
+import { DOM } from "./dom.js";
+import { joinCall, leaveCall } from "./main.js";
 
+// Only starts motion detection if the appropriate client type env is passed.
 if (env.CLIENT_TYPE === "office") {
+  // Checks for location URL parameter.
   const officeLocation = new URLSearchParams(window.location.search).get("location");
   if (officeLocation) {
     const officeName = `Office ${officeLocation}`;
@@ -14,6 +16,7 @@ if (env.CLIENT_TYPE === "office") {
     );
   }
 
+  // State for motion variables.
   let motionActive = false;
   let lastMotionTime = new Date(2018, 11, 24, 10, 33, 30, 0); // Random date in the past.
 
@@ -23,7 +26,6 @@ if (env.CLIENT_TYPE === "office") {
     sensitivity: 0.2,
     threshold: 25,
     debug: false,
-    containerClassName: "my-diffy-container",
     sourceDimensions: { w: 130, h: 100 },
     onFrame: (matrix) => {
       // Gets the current time.
@@ -44,7 +46,7 @@ if (env.CLIENT_TYPE === "office") {
         if (motionActive) {
           leaveCall();
           motionActive = false;
-          console.log("Motion timed out.");
+          console.log("Motion timed out, left call.");
         }
       } else {
         if (!motionActive) {

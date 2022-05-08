@@ -1,55 +1,55 @@
-import { getUsername } from "./user.js";
+import { getUsername } from "../user.js";
 import {
-  closeConnections,
+  closePeerConnections,
   receiveICECandidate,
   receiveVideoAnswer,
   receiveVideoOffer,
-  removePeerConnection,
+  closePeerConnection,
   sendVideoOffer,
-} from "./webrtc.js";
+} from "./peers.js";
 import {
   setParticipantCount,
   incrementParticipantCount,
   decrementParticipantCount,
   displayError,
-} from "./dom.js";
+  displayLogin,
+} from "../dom.js";
 
-/** @type {WebSocket | undefined} */
+/**
+ * WebSocket connection to the WebRTC signaling server. Undefined if uninitialized.
+ * @type {WebSocket | undefined}
+ */
 let socket;
 
-export function connectSocket() {
+/**
+ * Tries to establish socket connection to the WebRTC signaling server.
+ * If successful, registers event listeners on the socket.
+ */
+export function connectWebRTCSocket() {
   const protocol = env.ENV === "production" ? "wss" : "ws";
-  const host = env.MQTT_HOST;
-  const port = env.WEBRTC_PORT;
-  const serverURL = `${protocol}://${host}:${port}`;
+  const serverURL = `${protocol}://${env.WEBRTC_HOST}:${env.WEBRTC_PORT}`;
 
   try {
     socket = new WebSocket(serverURL);
-    socket.addEventListener("message", handleMessage);
-    socket.addEventListener("close", handleClose);
-    socket.addEventListener("open", () => {
-      console.log("Successfully connected to WebRTC signaling server.");
-    });
-    socket.addEventListener("error", (event) => {
-      console.log(`Error in socket connection to WebRTC signaling server:\n${event}`);
-    });
   } catch (error) {
     console.log(`Socket connection to WebRTC signaling server failed:\n${error}`);
-  }
-}
-
-/** @param {any} message */
-export function sendToServer(message) {
-  if (!socket) {
-    console.log("Sending to server failed: socket uninitialized.");
     return;
   }
 
-  console.log("Sending to server:", message);
-  const serialized = JSON.stringify(message);
-  socket.send(serialized);
+  socket.addEventListener("message", handleMessage);
+  socket.addEventListener("close", handleClose);
+  socket.addEventListener("open", () => {
+    console.log("Successfully connected to WebRTC signaling server.");
+  });
+  socket.addEventListener("error", (event) => {
+    console.log(`Error in socket connection to WebRTC signaling server:\n${event}`);
+  });
 }
 
+/**
+ * Message types configured on the WebRTC server.
+ * Should be updated if the server configuration changes.
+ */
 export const messages = Object.freeze({
   VIDEO_OFFER: "video-offer",
   VIDEO_ANSWER: "video-answer",
@@ -62,7 +62,25 @@ export const messages = Object.freeze({
   ERROR: "error",
 });
 
-/** @param {MessageEvent<any>} event */
+/**
+ * Serializes the given message object to JSON, and sends it to the WebRTC signaling server.
+ * @param {any} message
+ */
+export function sendWebRTCMessage(message) {
+  if (!socket) {
+    console.log("Sending to server failed: socket uninitialized.");
+    return;
+  }
+
+  console.log("Sending to server:", message);
+  const serialized = JSON.stringify(message);
+  socket.send(serialized);
+}
+
+/**
+ * Handles the incoming WebSocket message.
+ * @param {MessageEvent<any>} event
+ */
 function handleMessage(event) {
   const message = JSON.parse(event.data);
   console.log("Socket message received:", message);
@@ -85,22 +103,25 @@ function handleMessage(event) {
 
       const user = getUsername();
       if (user.ok) sendVideoOffer(message.username);
+
       break;
     case messages.USER_LEFT:
       decrementParticipantCount();
-      removePeerConnection(message.username);
+      closePeerConnection(message.username);
       break;
     case messages.ERROR:
-      console.log(`Error received from WebRTC server: ${message.errorMessage}`);
+      console.log(`Error received from WebRTC server:\n${message.errorMessage}`);
       break;
     default:
       console.log(`Unrecognized message type: ${message.type}`);
   }
 }
 
+/** On socket connection close: closes the stream, and reloads the app. */
 function handleClose() {
-  closeConnections();
+  closePeerConnections();
   setParticipantCount(0);
+  displayLogin();
   displayError("Connection lost. Reloading...");
   setTimeout(() => location.reload(), 5000);
 }

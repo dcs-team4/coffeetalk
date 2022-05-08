@@ -1,10 +1,13 @@
-import { messages, sendToServer } from "./socket.js";
-import { getUsername, setUsername } from "./user.js";
-import { connectMQTT, startQuiz } from "./mqtt.js";
-import { leaveCall } from "./webrtc.js";
+import { setUsername } from "./user.js";
+import { startQuiz } from "./mqtt.js";
+import { joinCall, leaveCall } from "./main.js";
 
-/** DOM elements fetched on page load. */
-export const DOM = {
+/**
+ * Utility object wrapping functions for fetching DOM elements.
+ * Elements typed as non-optional should be assumed to be present; those typed as optional depend
+ * on how the web app is accessed (e.g. home vs. office client).
+ */
+export const DOM = Object.freeze({
   participantCount: () => /** @type {HTMLElement} */ (document.getElementById("participant-count")),
   errorField: () => /** @type {HTMLElement} */ (document.getElementById("error-field")),
   loginBar: () => /** @type {?HTMLElement} */ document.getElementById("login-bar"),
@@ -23,23 +26,29 @@ export const DOM = {
   videoContainer: () => /** @type {HTMLElement} */ (document.getElementById("video-container")),
   localVideo: () => /** @type {HTMLVideoElement} */ (document.getElementById("local-video")),
   localVideoName: () => /** @type {HTMLElement} */ (document.getElementById("local-video-name")),
-};
+});
 
 registerListeners();
 
+/** Initializes event listeners on the appropriate DOM objects. */
 function registerListeners() {
   DOM.usernameInput()?.addEventListener("change", (event) => {
-    setUsername(/** @type {HTMLInputElement} */ (event.target).value);
+    const name = /** @type {HTMLInputElement} */ (event.target).value;
+    setUsername(name);
   });
 
   DOM.joinCallButton()?.addEventListener("click", joinCall);
-
   DOM.leaveStreamButton()?.addEventListener("click", leaveCall);
-
   DOM.startQuizButton().addEventListener("click", startQuiz);
 }
 
-/** @param {string} peerName, @returns {[HTMLVideoElement, HTMLElement]} */
+/**
+ * Creates a video element for a peer, wraps it in a container, and appends it to the stream view.
+ * Adds the given `peerName` in a block under the video.
+ * Returns the video element and the container surrounding it.
+ * @param {string} peerName
+ * @returns {{ video: HTMLVideoElement, container: HTMLElement }}
+ */
 export function createPeerVideoElement(peerName) {
   const container = document.createElement("div");
 
@@ -47,49 +56,36 @@ export function createPeerVideoElement(peerName) {
   video.autoplay = true;
   container.appendChild(video);
 
-  const nameEl = document.createElement("div");
-  nameEl.innerText = peerName;
-  nameEl.classList.add("video-name");
-  container.appendChild(nameEl);
+  const name = document.createElement("div");
+  name.innerText = peerName;
+  name.classList.add("video-name");
+  container.appendChild(name);
 
   DOM.videoContainer()?.appendChild(container);
 
-  return [video, container];
+  return { video, container };
 }
 
-export function joinCall() {
-  const user = getUsername();
-  if (!user.ok) {
-    DOM.errorField().innerText = "Invalid username";
-    return;
-  }
-  DOM.errorField().innerText = "";
-
-  sendToServer({
-    type: messages.JOIN_STREAM,
-    username: user.name,
-  });
-
-  connectMQTT();
-
-  incrementParticipantCount();
-
-  DOM.loginBar()?.classList.add("hide");
-  DOM.quizBar().classList.remove("hide");
-  DOM.leaveStreamBar()?.classList.remove("hide");
-}
-
-/** @param {number} value */
+/**
+ * Sets the participant count display to the given value.
+ * @param {number} value
+ */
 export function setParticipantCount(value) {
   DOM.participantCount().innerText = value.toString();
 }
 
+/**
+ * Increments the participant count display by one.
+ */
 export function incrementParticipantCount() {
   const count = DOM.participantCount();
   const value = parseInt(count.innerText) || 0;
   count.innerText = (value + 1).toString();
 }
 
+/**
+ * Decrements the participant count display by one, unless it is missing/already 0.
+ */
 export function decrementParticipantCount() {
   const count = DOM.participantCount();
   const value = parseInt(count.innerText);
@@ -100,17 +96,29 @@ export function decrementParticipantCount() {
   count.innerText = (value - 1).toString();
 }
 
+/** Shows DOM elements for the active stream view, and hides others. */
+export function displayStream() {
+  DOM.loginBar()?.classList.add("hide");
+  DOM.quizBar().classList.remove("hide");
+  DOM.leaveStreamBar()?.classList.remove("hide");
+}
+
+/** Shows DOM elements for the login view, and hides others. */
 export function displayLogin() {
   DOM.leaveStreamBar()?.classList.add("hide");
   DOM.quizBar().classList.add("hide");
   DOM.loginBar()?.classList.remove("hide");
 }
 
-/** @param {string} errorMessage */
+/**
+ * Shows the given error message in the error display.
+ * @param {string} errorMessage
+ */
 export function displayError(errorMessage) {
   DOM.errorField().innerText = errorMessage;
 }
 
+/** Clears the text of the error display. */
 export function clearError() {
   DOM.errorField().innerText = "";
 }

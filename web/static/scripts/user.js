@@ -1,7 +1,16 @@
-/** @type {string} */
+import { DOM } from "./dom.js";
+
+/**
+ * Username used for stream ID and message passing.
+ * Undefined until user logs in.
+ * @type {string | undefined}
+ */
 let username;
 
-/** @returns {{ name: string, ok: true } | { ok: false }} */
+/**
+ * Tries to get the user's username, if it's set.
+ * @returns {{ name: string, ok: true } | { ok: false }}
+ */
 export function getUsername() {
   if (username === undefined || username == "") {
     return { ok: false };
@@ -10,7 +19,28 @@ export function getUsername() {
   return { name: username, ok: true };
 }
 
-/** @param {string} name */
+/**
+ * Sets username to the given name.
+ * @param {string} name
+ */
 export function setUsername(name) {
   username = name;
+}
+
+/**
+ * Logs the user in with their selected username.
+ * If username is not selected, displays error message and returns `ok=false`.
+ * Otherwise, returns an object with the user's `name`.
+ * @returns {{ name: string, ok: true } | { ok: false }}
+ */
+export function login() {
+  const user = getUsername();
+
+  if (user.ok) {
+    DOM.errorField().innerText = "";
+  } else {
+    DOM.errorField().innerText = "Invalid username";
+  }
+
+  return user;
 }
