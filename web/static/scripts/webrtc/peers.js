@@ -193,14 +193,14 @@ export function createPeerConnection(peerName) {
   const peer = { connection };
 
   // Registers event handlers.
-  connection.addEventListener("icecandidate", (event) => {
-    handleICECandidate(event, peerName);
-  });
   connection.addEventListener("track", (event) => {
     handleTrack(event, peer, peerName);
   });
   connection.addEventListener("negotiationneeded", () => {
     handleNegotiationNeeded(peer, peerName);
+  });
+  connection.addEventListener("icecandidate", (event) => {
+    handleICECandidate(event, peerName);
   });
   connection.addEventListener("iceconnectionstatechange", () =>
     handleICEConnectionStateChange(peer, peerName)
@@ -216,17 +216,17 @@ export function createPeerConnection(peerName) {
 }
 
 /**
- * Handles incoming candidates for ICE (Interactive Connectivity Establishment protocol).
- * @param {RTCPeerConnectionIceEvent} event, @param {string} peerName
+ * Handles incoming video stream on the peer connection.
+ * @param {RTCTrackEvent} event, @param {Peer} peer, @param {string} peerName
  */
-function handleICECandidate(event, peerName) {
-  if (event.candidate) {
-    sendWebRTCMessage({
-      type: messages.ICE_CANDIDATE,
-      to: peerName,
-      sdp: event.candidate,
-    });
+function handleTrack(event, peer, peerName) {
+  if (!peer.video) {
+    const { video, container } = createPeerVideoElement(peerName);
+    peer.video = video;
+    peer.videoContainer = container;
   }
+
+  peer.video.srcObject = event.streams[0];
 }
 
 /**
@@ -250,17 +250,17 @@ async function handleNegotiationNeeded(peer, peerName) {
 }
 
 /**
- * Handles incoming video stream on the peer connection.
- * @param {RTCTrackEvent} event, @param {Peer} peer, @param {string} peerName
+ * Handles incoming candidates for ICE (Interactive Connectivity Establishment protocol).
+ * @param {RTCPeerConnectionIceEvent} event, @param {string} peerName
  */
-function handleTrack(event, peer, peerName) {
-  if (!peer.video) {
-    const { video, container } = createPeerVideoElement(peerName);
-    peer.video = video;
-    peer.videoContainer = container;
+function handleICECandidate(event, peerName) {
+  if (event.candidate) {
+    sendWebRTCMessage({
+      type: messages.ICE_CANDIDATE,
+      to: peerName,
+      sdp: event.candidate,
+    });
   }
-
-  peer.video.srcObject = event.streams[0];
 }
 
 /**
