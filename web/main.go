@@ -1,10 +1,20 @@
 package main
 
 import (
+	"embed"
 	"log"
-	"net/http"
 	"os"
+
+	"github.com/dcs-team4/coffeetalk/web/server"
 )
+
+// Embeds the "templates" directory in this Go binary, for processing and serving of HTML.
+//go:embed templates
+var templatesDir embed.FS
+
+// Embeds the "static" directory in this Go binary, for serving of JS and CSS files.
+//go:embed static
+var staticDir embed.FS
 
 func main() {
 	// Gets PORT environment variable, defaulting to 3000 if not present.
@@ -13,18 +23,11 @@ func main() {
 		port = "3000"
 	}
 
-	err := setupRoutes()
-	if err != nil {
-		log.Fatalf("Error setting up routes: %v\n", err)
-	}
-
-	// Runs the web server (with TLS in if in production) until an error occurs.
 	log.Printf("Web server listening on port %v...\n", port)
-	if os.Getenv("ENV") == "production" {
-		err = listenAndServeTLS(":"+port, nil)
-	} else {
-		err = http.ListenAndServe(":"+port, nil)
-	}
+
+	// Serves the web app from the templates and static folders, until an error occurs.
+	err := server.Serve(":"+port, staticDir, templatesDir)
+
 	if err != nil {
 		log.Fatal(err)
 	}
