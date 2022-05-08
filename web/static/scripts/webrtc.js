@@ -1,5 +1,5 @@
 import { messages, sendToServer } from "./socket.js";
-import { createPeerVideoElement, decrementParticipantCount, DOM } from "./dom.js";
+import { createPeerVideoElement, decrementParticipantCount, displayLogin, DOM } from "./dom.js";
 
 /**
  * @typedef {Object} Peer
@@ -30,7 +30,7 @@ export async function streamLocalVideo() {
   DOM.localVideo().srcObject = localStream;
 }
 
-export function leaveCall() {
+export function closeConnections() {
   for (const peer of Object.values(peers)) {
     peer.connection.close();
     if (peer.videoContainer) {
@@ -41,13 +41,12 @@ export function leaveCall() {
   for (const peerName in peers) {
     delete peers[peerName];
   }
+}
 
-  DOM.leaveStreamBar()?.classList.add("hide");
-  DOM.quizBar().classList.add("hide");
-  DOM.loginBar()?.classList.remove("hide");
-
+export function leaveCall() {
+  closeConnections();
+  displayLogin();
   decrementParticipantCount();
-
   sendToServer({ type: messages.LEAVE_STREAM });
 }
 

@@ -99,3 +99,18 @@ export function decrementParticipantCount() {
 
   count.innerText = (value - 1).toString();
 }
+
+export function displayLogin() {
+  DOM.leaveStreamBar()?.classList.add("hide");
+  DOM.quizBar().classList.add("hide");
+  DOM.loginBar()?.classList.remove("hide");
+}
+
+/** @param {string} errorMessage */
+export function displayError(errorMessage) {
+  DOM.errorField().innerText = errorMessage;
+}
+
+export function clearError() {
+  DOM.errorField().innerText = "";
+}

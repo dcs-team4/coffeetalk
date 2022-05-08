@@ -1,5 +1,6 @@
 import { getUsername } from "./user.js";
 import {
+  closeConnections,
   receiveICECandidate,
   receiveVideoAnswer,
   receiveVideoOffer,
@@ -10,6 +11,7 @@ import {
   setParticipantCount,
   incrementParticipantCount,
   decrementParticipantCount,
+  displayError,
 } from "./dom.js";
 
 /** @type {WebSocket | undefined} */
@@ -24,9 +26,15 @@ export function connectSocket() {
   try {
     socket = new WebSocket(serverURL);
     socket.addEventListener("message", handleMessage);
-    console.log("Successfully connected to WebRTC signaling server.");
+    socket.addEventListener("close", handleClose);
+    socket.addEventListener("open", () => {
+      console.log("Successfully connected to WebRTC signaling server.");
+    });
+    socket.addEventListener("error", (event) => {
+      console.log(`Error in socket connection to WebRTC signaling server:\n${event}`);
+    });
   } catch (error) {
-    console.log(`Socket connection to WebRTC signaling server failed: ${error}`);
+    console.log(`Socket connection to WebRTC signaling server failed:\n${error}`);
   }
 }
 
@@ -88,4 +96,11 @@ function handleMessage(event) {
     default:
       console.log(`Unrecognized message type: ${message.type}`);
   }
+}
+
+function handleClose() {
+  closeConnections();
+  setParticipantCount(0);
+  displayError("Connection lost. Reloading...");
+  setTimeout(() => location.reload(), 5000);
 }
