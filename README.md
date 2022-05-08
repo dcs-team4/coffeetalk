@@ -13,6 +13,7 @@ CoffeeTalk is an inter-office communication system using WebRTC, WebSockets and 
 The project provides 3 servers, all written in [Go](https://go.dev/), with a Docker container configured for each.
 
 - `/web` contains a web server, serving the CoffeeTalk web app from the `templates` and `static` folders. The web app itself is written in vanilla HTML/CSS/JavaScript, with most of its logic in `/web/static/scripts`.
+  - `/server` sets up the web server, defines the app's routes, and configures TLS and web app environment.
   - When served, the web app can be accessed through two routes:
     - `/` is the default app for users accessing CoffeeTalk from home, letting them choose a name and join the talk.
     - `/office` is intended for offices to set up CoffeeTalk on a computer in a break room, and have it automatically join the talk when motion is detected (the [Diffy.js](https://github.com/maniart/diffyjs#readme) library is used for this).
@@ -21,11 +22,11 @@ The project provides 3 servers, all written in [Go](https://go.dev/), with a Doc
 - `/mqtt` contains a server for running quiz sessions over MQTT.
   - `/broker` wraps around the [mochi-co/mqtt](https://github.com/mochi-co/mqtt#readme) package to set up an MQTT broker.
   - `/quiz` defines a state machine for running quiz sessions, publishing questions and answers to the broker.
-- `/stm` provides a Go package with utility types and functions for setting up state machines. The documentation can be read in `stm.go`, or on [pkg.go.dev](https://pkg.go.dev/github.com/dcs-team4/coffeetalk/stm).
+- `/stm` contains a Go package with utility types and functions for setting up state machines. The documentation can be read in `stm.go`, or on [pkg.go.dev](https://pkg.go.dev/github.com/dcs-team4/coffeetalk/stm).
 
 The project uses Docker Compose to coordinate containers, with a config for local development defined in `docker-compose.yml`, and a production config in `docker-compose-prod.yml`. The system has been deployed on a [DigitalOcean](https://www.digitalocean.com/) Virtual Private Server, but could be deployed anywhere that supports Docker.
 
-For production, the servers expect a TLS certificate (`tls-cert.pem`) and key (`tls-key.pem`) in their respective `tls` directories (`web/tls`, `webrtc/signals/tls`, `mqtt/broker/tls`). This is required, since the web browser can only access the webcam when the app is served over HTTPS.
+For production, the servers expect a TLS certificate (`tls-cert.pem`) and key (`tls-key.pem`) in their respective `tls` directories (`web/server/tls`, `webrtc/signals/tls`, `mqtt/broker/tls`). This is required, since the web browser can only access the webcam when the app is served over HTTPS.
 
 The below deployment diagram shows the components in the system and the relations between them.
 
