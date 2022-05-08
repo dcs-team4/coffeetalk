@@ -31,16 +31,21 @@ let mqtt_client;
 export function connectMQTT() {
   const user = getUsername();
   if (!user.ok) {
-    console.log("MQTT connection failed.");
+    console.log("MQTT connection failed: Invalid username.");
     return;
   }
 
+  // Creates MQTT client and registers event handlers.
   mqtt_client = new Paho.MQTT.Client(env.MQTT_HOST, parseInt(env.MQTT_PORT), user.name);
   mqtt_client.onMessageArrived = handleMQTTMessage;
-  mqtt_client.onConnectionLost = ({ errorMessage }) => {
-    console.log(`Connection to MQTT broker lost:\n${errorMessage}`);
+  mqtt_client.onConnectionLost = ({ errorCode, errorMessage }) => {
+    // Error code 0 means no error.
+    if (errorCode !== 0) {
+      console.log(`Connection to MQTT broker lost:\n${errorMessage}`);
+    }
   };
 
+  // Connects to the broker, using SSL if in production.
   mqtt_client.connect({
     onSuccess: () => {
       console.log("Successfully connected to MQTT broker.");
@@ -114,5 +119,6 @@ export function startQuiz() {
 export function disconnectMQTT() {
   if (mqtt_client?.isConnected()) {
     mqtt_client.disconnect();
+    console.log("Disconnected from MQTT broker.");
   }
 }
