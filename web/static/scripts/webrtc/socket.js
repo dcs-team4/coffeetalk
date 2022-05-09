@@ -14,12 +14,19 @@ import {
   displayError,
   displayLogin,
 } from "../dom.js";
+import { leaveSession } from "../session.js";
 
 /**
  * WebSocket connection to the WebRTC signaling server. Undefined if uninitialized.
  * @type {WebSocket | undefined}
  */
 let socket;
+
+/**
+ * Whether the socket is open and ready to send on.
+ * @type {boolean}
+ */
+export let socketOpen = false;
 
 /**
  * Tries to establish socket connection to the WebRTC signaling server.
@@ -39,6 +46,7 @@ export function connectWebRTCSocket() {
   socket.addEventListener("message", handleMessage);
   socket.addEventListener("close", handleClose);
   socket.addEventListener("open", () => {
+    socketOpen = true;
     console.log("Successfully connected to WebRTC signaling server.");
   });
   socket.addEventListener("error", (event) => {
@@ -67,7 +75,7 @@ export const messages = Object.freeze({
  * @param {any} message
  */
 export function sendWebRTCMessage(message) {
-  if (!socket) {
+  if (!socket || !socketOpen) {
     console.log("Sending to server failed: socket uninitialized.");
     return;
   }
@@ -117,11 +125,10 @@ function handleMessage(event) {
   }
 }
 
-/** On socket connection close: closes the stream, and reloads the app. */
+/** On socket connection close: leaves the stream, and reloads the app. */
 function handleClose() {
-  closePeerConnections();
-  setParticipantCount(0);
-  displayLogin();
+  socketOpen = false;
+  leaveSession();
   displayError("Connection lost. Reloading...");
   setTimeout(() => location.reload(), 5000);
 }

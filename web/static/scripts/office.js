@@ -1,6 +1,6 @@
 import { setUsername } from "./user.js";
 import { DOM } from "./dom.js";
-import { joinSession, leaveSession } from "./session.js";
+import { inSession, joinSession, leaveSession } from "./session.js";
 import { socketOpen } from "./webrtc/socket.js";
 
 /** Initializes the office client with a name for the stream. */
@@ -23,12 +23,11 @@ export function initializeOffice() {
  * Leaves the stream again after 2 minutes of inactivity.
  */
 export function detectMotion() {
-  // State for motion variables.
-  let motionActive = false;
+  // State used to find the time elapsed from last detected motion.
   let lastMotionTime = new Date(2018, 11, 24, 10, 33, 30, 0); // Random date in the past.
 
   // Uses Diffy.js library to detect motion from webcam.
-  return Diffy.create({
+  Diffy.create({
     resolution: { x: 10, y: 5 },
     sensitivity: 0.2,
     threshold: 25,
@@ -50,15 +49,13 @@ export function detectMotion() {
 
       // Checks for motion in the past two minutes, and joins/leaves the call accordingly.
       if (secondsSinceLastMotion >= 120) {
-        if (motionActive) {
+        if (inSession) {
           leaveSession();
-          motionActive = false;
           console.log("Motion timed out, left call.");
         }
       } else {
-        if (!motionActive && socketOpen) {
+        if (!inSession && socketOpen) {
           joinSession();
-          motionActive = true;
           console.log("Motion detected, joined call.");
         }
       }
