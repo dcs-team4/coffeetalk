@@ -1,21 +1,19 @@
 import { env } from "../env.js";
 import { getUsername } from "../user.js";
+import { leaveSession } from "../session.js";
 import {
-  closePeerConnections,
-  receiveICECandidate,
-  receiveVideoAnswer,
-  receiveVideoOffer,
-  closePeerConnection,
   sendVideoOffer,
+  receiveVideoOffer,
+  receiveVideoAnswer,
+  receiveICECandidate,
+  closePeerConnection,
 } from "./peers.js";
 import {
+  displayError,
   setParticipantCount,
   incrementParticipantCount,
   decrementParticipantCount,
-  displayError,
-  displayLogin,
 } from "../dom.js";
-import { leaveSession } from "../session.js";
 
 /**
  * WebSocket connection to the WebRTC signaling server. Undefined if uninitialized.
