@@ -12,20 +12,20 @@ CoffeeTalk is an inter-office communication system using WebRTC, WebSockets and 
 
 The project provides 3 servers, all written in [Go](https://go.dev/), with a Docker container configured for each.
 
-- `/web` contains a web server, serving the CoffeeTalk web app.
-  - `/server` sets up the web server, defines the app's routes, and configures TLS and app environment.
-  - `/templates` contains the HTML template files for the app's pages.
-  - `/static` contains the static JavaScript and CSS files for the web app.
-    - `/scripts` contains the client application logic, written in vanilla JavaScript and using JSDoc for type hinting. `main.js` is the app's entry point.
+- `web/` contains a web server, serving the CoffeeTalk web app.
+  - `server/` sets up the web server, defines the app's routes, and configures TLS and app environment.
+  - `templates/` contains the HTML template files for the app's pages.
+  - `static/` contains the static JavaScript and CSS files for the web app.
+    - `scripts/` contains the client application logic, written in vanilla JavaScript and using JSDoc for type hinting. `main.js` is the app's entry point.
   - When served, the web app can be accessed through two routes:
     - `/` is the default app for users accessing CoffeeTalk from home, letting them choose a name and join the talk.
     - `/office` is intended for offices to set up CoffeeTalk on a computer in a break room, and have it automatically join the talk when motion is detected (using the [Diffy.js](https://github.com/maniart/diffyjs#readme) library).
-- `/webrtc` contains a WebRTC signaling server for coordinating peer-to-peer video and audio streaming between clients. It establishes WebSocket connections with clients for persistent two-way communication and message forwarding.
-  - `/signals` sets up the socket connection API and defines the signaling messages passed between clients.
-- `/mqtt` contains a server for running quiz sessions over MQTT.
-  - `/broker` wraps around the [mochi-co/mqtt](https://github.com/mochi-co/mqtt#readme) package to set up an MQTT broker.
-  - `/quiz` defines a state machine for running quiz sessions, publishing questions and answers to the broker.
-- `/stm` contains a Go package with utility types and functions for setting up state machines. The documentation can be read in `stm.go`, or on [pkg.go.dev](https://pkg.go.dev/github.com/dcs-team4/coffeetalk/stm).
+- `webrtc/` contains a WebRTC signaling server for coordinating peer-to-peer video and audio streaming between clients. It establishes WebSocket connections with clients for persistent two-way communication and message forwarding.
+  - `signals/` sets up the socket connection API and defines the signaling messages passed between clients.
+- `mqtt/` contains a server for running quiz sessions over MQTT.
+  - `broker/` wraps around the [mochi-co/mqtt](https://github.com/mochi-co/mqtt#readme) package to set up an MQTT broker.
+  - `quiz/` defines a state machine for running quiz sessions, publishing questions and answers to the broker.
+- `stm/` contains a Go package with utility types and functions for setting up state machines. The documentation can be read in `stm.go`, or on [pkg.go.dev](https://pkg.go.dev/github.com/dcs-team4/coffeetalk/stm).
 
 The project uses Docker Compose to coordinate containers, with a config for local development defined in `docker-compose.yml`, and a production config in `docker-compose-prod.yml`. The system has been deployed on a [DigitalOcean](https://www.digitalocean.com/) Virtual Private Server, but could be deployed anywhere that supports Docker.
 
