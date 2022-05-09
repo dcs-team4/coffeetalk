@@ -28,32 +28,6 @@ let socket;
 export let socketOpen = false;
 
 /**
- * Tries to establish socket connection to the WebRTC signaling server.
- * If successful, registers event listeners on the socket.
- */
-export function connectWebRTCSocket() {
-  const protocol = env.ENV === "production" ? "wss" : "ws";
-  const serverURL = `${protocol}://${env.WEBRTC_HOST}:${env.WEBRTC_PORT}`;
-
-  try {
-    socket = new WebSocket(serverURL);
-  } catch (error) {
-    console.log(`Socket connection to WebRTC signaling server failed:\n${error}`);
-    return;
-  }
-
-  socket.addEventListener("message", handleMessage);
-  socket.addEventListener("close", handleClose);
-  socket.addEventListener("open", () => {
-    socketOpen = true;
-    console.log("Successfully connected to WebRTC signaling server.");
-  });
-  socket.addEventListener("error", (event) => {
-    console.log(`Error in socket connection to WebRTC signaling server:\n${event}`);
-  });
-}
-
-/**
  * Message types configured on the WebRTC server.
  * Should be updated if the server configuration changes.
  */
@@ -75,13 +49,39 @@ export const messages = Object.freeze({
  */
 export function sendWebRTCMessage(message) {
   if (!socket || !socketOpen) {
-    console.log("Sending to server failed: socket uninitialized.");
+    console.log("Failed to send to WebRTC server: socket uninitialized.");
     return;
   }
 
-  console.log("Sending to server:", message);
+  console.log("Sending to WebRTC server:", message);
   const serialized = JSON.stringify(message);
   socket.send(serialized);
+}
+
+/**
+ * Tries to establish socket connection to the WebRTC signaling server.
+ * If successful, registers event listeners on the socket.
+ */
+export function connectWebRTCSocket() {
+  const protocol = env.ENV === "production" ? "wss" : "ws";
+  const serverURL = `${protocol}://${env.WEBRTC_HOST}:${env.WEBRTC_PORT}`;
+
+  try {
+    socket = new WebSocket(serverURL);
+  } catch (error) {
+    console.log("Socket connection to WebRTC server failed:", error);
+    return;
+  }
+
+  socket.addEventListener("message", handleMessage);
+  socket.addEventListener("close", handleClose);
+  socket.addEventListener("open", () => {
+    socketOpen = true;
+    console.log("Successfully connected to WebRTC signaling server.");
+  });
+  socket.addEventListener("error", (event) => {
+    console.log("Error in socket connection to WebRTC server:", event);
+  });
 }
 
 /**
@@ -90,7 +90,7 @@ export function sendWebRTCMessage(message) {
  */
 function handleMessage(event) {
   const message = JSON.parse(event.data);
-  console.log("Socket message received:", message);
+  console.log("Received from WebRTC server:", message);
 
   switch (message.type) {
     case messages.VIDEO_OFFER:
@@ -117,10 +117,10 @@ function handleMessage(event) {
       closePeerConnection(message.username);
       break;
     case messages.ERROR:
-      console.log(`Error received from WebRTC server:\n${message.errorMessage}`);
+      console.log(`Error from WebRTC server:\n${message.errorMessage}`);
       break;
     default:
-      console.log(`Unrecognized message type: ${message.type}`);
+      console.log(`Unrecognized WebRTC message type: ${message.type}`);
   }
 }
 
