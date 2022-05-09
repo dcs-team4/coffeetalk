@@ -19,13 +19,28 @@ import { login } from "./user.js";
 import { connectWebRTCSocket, sendWebRTCMessage, messages } from "./webrtc/socket.js";
 import { streamLocalVideo, closePeerConnections } from "./webrtc/peers.js";
 import { connectMQTT, disconnectMQTT } from "./mqtt.js";
-import "./office.js";
 
 // Initializes socket connection with WebRTC signaling server.
 connectWebRTCSocket();
 
 // Shows the users's own webcam.
 streamLocalVideo();
+
+// Runs office script if this is an office client.
+if (env.CLIENT_TYPE === "office") {
+  runOfficeScript();
+}
+
+/** Loads the script for the office client, and runs it. */
+async function runOfficeScript() {
+  try {
+    const { initializeOffice, detectMotion } = await import("./office.js");
+    initializeOffice();
+    detectMotion();
+  } catch (error) {
+    console.log("Failed to load office script:", error);
+  }
+}
 
 /**
  * - Logs in with the user's provided username

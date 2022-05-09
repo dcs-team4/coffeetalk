@@ -2,8 +2,8 @@ import { setUsername } from "./user.js";
 import { DOM } from "./dom.js";
 import { joinCall, leaveCall } from "./main.js";
 
-// Only starts motion detection if the appropriate client type env is passed.
-if (env.CLIENT_TYPE === "office") {
+/** Initializes the office client with a name for the stream. */
+export function initializeOffice() {
   // Checks for location URL parameter.
   const officeLocation = new URLSearchParams(window.location.search).get("location");
   if (officeLocation) {
@@ -15,7 +15,13 @@ if (env.CLIENT_TYPE === "office") {
       "Please provide office location as URL parameter.\n\nExample: /office?location=Oslo"
     );
   }
+}
 
+/**
+ * Watches for motion in the webcam, and automatically joins the stream if motion is detected.
+ * Leaves the stream again after 2 minutes of inactivity.
+ */
+export function detectMotion() {
   // State for motion variables.
   let motionActive = false;
   let lastMotionTime = new Date(2018, 11, 24, 10, 33, 30, 0); // Random date in the past.
