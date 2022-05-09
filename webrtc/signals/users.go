@@ -111,7 +111,7 @@ func (users *Users) GetByName(username string) (user *User, ok bool) {
 }
 
 // Adds the given user to the users map, giving it a unique userID and returning it.
-func addUser(user *User) (userID int) {
+func (user *User) Register() (userID int) {
 	users.Lock.Lock()
 	defer users.Lock.Unlock()
 

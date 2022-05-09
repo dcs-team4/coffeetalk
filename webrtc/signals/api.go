@@ -46,20 +46,22 @@ func connectSocket(res http.ResponseWriter, req *http.Request) {
 		Lock:   new(sync.RWMutex),
 	}
 
-	// Adds the requesting participant to the list of participants.
-	userID := addUser(user)
+	// Register the requesting participant in the list of participants.
+	userID := user.Register()
 	log.Printf("Connection established with client ID %v.\n", userID)
 
-	// Sets up a channel to stop listening on close.
-	stop := make(chan struct{}, 1)
-
-	// Spawns a goroutine for handling messages from the user.
-	go user.Listen(stop)
+	// Starts a goroutine for handling messages from the user.
+	go user.Listen()
 
 	// Adds a handler for removing the participant when the socket is closed.
 	socket.SetCloseHandler(func(code int, text string) error {
-		stop <- struct{}{}
 		removeUser(userID)
+
+		if user.Name != "" {
+			user.HandleUserLeft()
+		}
+
+		log.Printf("Socket with client ID %v closed.\n", userID)
 		return nil
 	})
 

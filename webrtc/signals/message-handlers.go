@@ -8,32 +8,22 @@ import (
 )
 
 // Listens for WebSocket messages from the given user, and forwards them to HandleMessage.
-// Stops when it receives on the stop channel.
-func (user *User) Listen(stop <-chan struct{}) {
+// Stops when the socket is closed.
+func (user *User) Listen() {
 	for {
-		select {
-		case <-stop:
-			return
-		default:
-			_, message, err := user.Socket.ReadMessage()
+		_, message, err := user.Socket.ReadMessage()
 
-			if err != nil {
-				if _, ok := err.(*websocket.CloseError); ok {
-					log.Printf("Socket with client ID %v closed.\n", user.ID)
-
-					if user.Name != "" {
-						user.HandleUserLeft()
-					}
-					return
-				} else {
-					log.Printf("Could not read message: %v\n", err)
-				}
-
-				continue
+		if err != nil {
+			if _, ok := err.(*websocket.CloseError); ok {
+				return
+			} else {
+				log.Printf("Failed to read socket message: %v\n", err)
 			}
 
-			user.HandleMessage(message)
+			continue
 		}
+
+		user.HandleMessage(message)
 	}
 }
 
