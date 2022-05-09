@@ -1,3 +1,4 @@
+import { env } from "./env.js";
 import { getUsername } from "./user.js";
 import { DOM } from "./dom.js";
 

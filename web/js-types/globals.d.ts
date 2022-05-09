@@ -1,5 +1,5 @@
 /** Object with environment variables passed from the server through the HTML template. */
-declare let env: {
+declare let serverEnv: {
   [envName: string]: string;
 };
 
