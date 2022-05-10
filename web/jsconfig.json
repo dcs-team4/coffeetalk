@@ -3,8 +3,10 @@
     "module": "es2022",
     "target": "ES2021",
     "checkJs": true,
-    "strict": true,
-    "types": ["paho-mqtt"]
+    "strict": true
   },
-  "include": ["static/scripts", "js-types"]
+  "include": ["static/scripts", "js-types"],
+  "typeAcquisition": {
+    "include": ["paho-mqtt"]
+  }
 }

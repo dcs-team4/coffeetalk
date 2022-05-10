@@ -1,9 +1,6 @@
-# VSCode local settings files
+# VSCode local settings files.
 .vscode
 *.code-workspace
-
-# Node.js folder for JavaScript modules.
-node_modules
 
 # TLS certificate files for production environment.
 tls-cert.pem

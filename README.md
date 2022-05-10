@@ -58,21 +58,7 @@ The web application should now be accessible at `localhost:3000`, with the WebRT
 
 ### Type Hinting
 
-The web app uses [JSDoc](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) for type hinting its JavaScript files, configured in `/web/jsconfig.json`. It uses `npm` to fetch type declarations for external libraries. To set this up for local development, follow these steps:
-
-1. Install Node.js (includes `npm`): https://nodejs.org/en/
-
-2. From `coffeetalk`, navigate to `web`:
-
-```
-cd web
-```
-
-3. Install project dependencies (in this case, external type declarations):
-
-```
-npm ci
-```
+The web app uses [JSDoc](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) for type hinting its JavaScript files, configured in `web/jsconfig.json`. To get full [type hinting of external libraries](https://code.visualstudio.com/docs/nodejs/working-with-javascript#_typings-and-automatic-type-acquisition) when developing in VSCode, install Node.js: https://nodejs.org/en/.
 
 ## Credits
 
