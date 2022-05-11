@@ -1,0 +1,7 @@
+# VSCode local settings files.
+.vscode
+*.code-workspace
+
+# TLS certificate files for production environment.
+tls-cert.pem
+tls-key.pem
