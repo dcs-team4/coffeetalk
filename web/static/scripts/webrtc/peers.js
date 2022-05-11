@@ -202,12 +202,12 @@ export function createPeerConnection(peerName) {
   connection.addEventListener("icecandidate", (event) => {
     handleICECandidate(event, peerName);
   });
-  connection.addEventListener("iceconnectionstatechange", () =>
-    handleICEConnectionStateChange(peer, peerName)
-  );
-  connection.addEventListener("signalingstatechange", () =>
-    handleSignalingStateChange(peer, peerName)
-  );
+  connection.addEventListener("iceconnectionstatechange", () => {
+    handleICEConnectionStateChange(peer, peerName);
+  });
+  connection.addEventListener("signalingstatechange", () => {
+    handleSignalingStateChange(peer, peerName);
+  });
 
   // Adds the peer to the peers state.
   peers[peerName] = peer;
