@@ -2,8 +2,10 @@
   "compilerOptions": {
     "module": "es2022",
     "target": "ES2021",
+    "allowJs": true,
     "checkJs": true,
-    "strict": true
+    "strict": true,
+    "noEmit": true
   },
   "include": ["static/scripts"],
   "typeAcquisition": {
