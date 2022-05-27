@@ -1,9 +1,4 @@
-import {
-  displayLogin,
-  displayStream,
-  incrementParticipantCount,
-  decrementParticipantCount,
-} from "./dom.js";
+import { displayLogin, displayStream, incrementPeerCount, decrementPeerCount } from "./dom.js";
 import { connectMQTT, disconnectMQTT } from "./mqtt.js";
 import { login } from "./user.js";
 import { closePeerConnections } from "./webrtc/peers.js";
@@ -26,7 +21,7 @@ export function joinSession() {
   sendWebRTCMessage({ type: messages.JOIN_STREAM, username: user.name });
   connectMQTT();
   displayStream();
-  incrementParticipantCount();
+  incrementPeerCount();
 
   inSession = true;
   console.log("Joined session.");
@@ -43,7 +38,7 @@ export function leaveSession() {
   sendWebRTCMessage({ type: messages.LEAVE_STREAM });
   disconnectMQTT();
   displayLogin();
-  decrementParticipantCount();
+  decrementPeerCount();
 
   inSession = false;
   console.log("Left session.");

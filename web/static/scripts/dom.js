@@ -8,7 +8,7 @@ import { joinSession, leaveSession } from "./session.js";
  * on how the web app is accessed (e.g. home vs. office client).
  */
 export const DOM = Object.freeze({
-  participantCount: () => /** @type {HTMLElement} */ (document.getElementById("participant-count")),
+  peerCount: () => /** @type {HTMLElement} */ (document.getElementById("peer-count")),
   errorField: () => /** @type {HTMLElement} */ (document.getElementById("error-field")),
   loginBar: () => /** @type {?HTMLElement} */ document.getElementById("login-bar"),
   usernameInput: () => /** @type {?HTMLInputElement} */ (document.getElementById("username-input")),
@@ -67,27 +67,27 @@ export function createPeerVideoElement(peerName) {
 }
 
 /**
- * Sets the participant count display to the given value.
+ * Sets the peer count display to the given value.
  * @param {number} value
  */
-export function setParticipantCount(value) {
-  DOM.participantCount().innerText = value.toString();
+export function setPeerCount(value) {
+  DOM.peerCount().innerText = value.toString();
 }
 
 /**
- * Increments the participant count display by one.
+ * Increments the peer count display by one.
  */
-export function incrementParticipantCount() {
-  const count = DOM.participantCount();
+export function incrementPeerCount() {
+  const count = DOM.peerCount();
   const value = parseInt(count.innerText) || 0;
   count.innerText = (value + 1).toString();
 }
 
 /**
- * Decrements the participant count display by one, unless it is missing/already 0.
+ * Decrements the peer count display by one, unless it is missing/already 0.
  */
-export function decrementParticipantCount() {
-  const count = DOM.participantCount();
+export function decrementPeerCount() {
+  const count = DOM.peerCount();
   const value = parseInt(count.innerText);
   if (!value) {
     return;

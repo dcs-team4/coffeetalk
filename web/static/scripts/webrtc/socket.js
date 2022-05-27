@@ -7,12 +7,7 @@ import {
   receiveICECandidate,
   closePeerConnection,
 } from "./peers.js";
-import {
-  displayError,
-  setParticipantCount,
-  incrementParticipantCount,
-  decrementParticipantCount,
-} from "../dom.js";
+import { displayError, setPeerCount, incrementPeerCount, decrementPeerCount } from "../dom.js";
 
 /**
  * WebSocket connection to the WebRTC signaling server. Undefined if uninitialized.
@@ -105,15 +100,15 @@ function handleMessage(event) {
       receiveICECandidate(message.from, message.data);
       break;
     case messages.PEER_JOINED:
-      incrementParticipantCount();
+      incrementPeerCount();
       if (inSession) sendVideoOffer(message.username);
       break;
     case messages.PEER_LEFT:
-      decrementParticipantCount();
+      decrementPeerCount();
       closePeerConnection(message.username);
       break;
     case messages.CONNECTION_SUCCESS:
-      setParticipantCount(message.peerCount);
+      setPeerCount(message.peerCount);
       break;
     case messages.ERROR:
       console.log(`Error from WebRTC server:\n${message.errorMessage}`);

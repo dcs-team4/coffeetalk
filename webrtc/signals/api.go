@@ -46,14 +46,14 @@ func connectSocket(res http.ResponseWriter, req *http.Request) {
 		Lock:   new(sync.RWMutex),
 	}
 
-	// Register the requesting participant in the list of participants.
+	// Stores the new connection as a user.
 	userID := user.Register()
 	log.Printf("Connection established with client ID %v.\n", userID)
 
 	// Starts a goroutine for handling messages from the user.
 	go user.Listen()
 
-	// Adds a handler for removing the participant when the socket is closed.
+	// Adds a handler for removing the connection when the socket is closed.
 	socket.SetCloseHandler(func(code int, text string) error {
 		removeUser(userID)
 
@@ -65,14 +65,14 @@ func connectSocket(res http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
-	// Sends connection success message back, with number of participants in call.
+	// Sends connection success message back, with number of peers in call.
 	users.Lock.RLock()
 	defer users.Lock.RUnlock()
-	participantCount := 0
+	peerCount := 0
 	for _, user := range users.Map {
 		if user.Name != "" {
-			participantCount++
+			peerCount++
 		}
 	}
-	socket.WriteJSON(ConnectionSuccessMessage{Message{MsgConnectionSuccess}, participantCount})
+	socket.WriteJSON(ConnectionSuccessMessage{Message{MsgConnectionSuccess}, peerCount})
 }
