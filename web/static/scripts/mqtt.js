@@ -2,14 +2,17 @@ import { env } from "./env.js";
 import { getUsername } from "./user.js";
 import { DOM } from "./dom.js";
 
+/** Shared prefix for MQTT quiz topics. */
+const MQTT_TOPIC_PREFIX = "coffeetalk/quiz";
+
 /**
  * MQTT quiz topics to listen and post on.
  * Should be updated if the quiz server topic configuration changes.
  */
 const mqttTopics = {
-  QUESTIONS: "TTM4115/t4/quiz/q",
-  ANSWERS: "TTM4115/t4/quiz/a",
-  STATUS: "TTM4115/t4/quiz/s",
+  QUESTIONS: `${MQTT_TOPIC_PREFIX}/questions`,
+  ANSWERS: `${MQTT_TOPIC_PREFIX}/answers`,
+  STATUS: `${MQTT_TOPIC_PREFIX}/status`,
 };
 
 /**
@@ -17,8 +20,8 @@ const mqttTopics = {
  * Should be updated if the quiz server message configuration changes.
  */
 const mqttMessages = {
-  START: "Quiz_started",
-  END: "Quiz_ended",
+  START: "start-quiz",
+  END: "end-quiz",
 };
 
 /**
@@ -50,7 +53,7 @@ export function connectMQTT() {
   mqtt_client.connect({
     onSuccess: () => {
       console.log("Successfully connected to MQTT broker.");
-      mqtt_client?.subscribe("TTM4115/t4/quiz/#");
+      mqtt_client?.subscribe(`${MQTT_TOPIC_PREFIX}/#`);
     },
     onFailure: ({ errorMessage }) => {
       console.log(`Failed to connect to MQTT broker:\n${errorMessage}`);
