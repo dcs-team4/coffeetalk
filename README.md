@@ -22,7 +22,7 @@ The project provides 3 servers, all written in [Go](https://go.dev/), with a Doc
     - `/` is the default app for users accessing CoffeeTalk from home, letting them choose a name and join the talk.
     - `/office` is intended for offices to set up CoffeeTalk on a computer in a break room, and have it automatically join the talk when motion is detected (using the [Diffy.js](https://github.com/maniart/diffyjs#readme) library).
 - `webrtc/` contains a WebRTC signaling server for coordinating peer-to-peer video and audio streaming between clients. It establishes WebSocket connections with clients for persistent two-way communication and message forwarding.
-  - `signals/` sets up the socket connection API and defines the signaling messages passed between clients.
+  - `signaling/` sets up the socket connection API and defines the signaling messages passed between clients.
 - `mqtt/` contains a server for running quiz sessions over MQTT.
   - `broker/` wraps around the [mochi-co/mqtt](https://github.com/mochi-co/mqtt#readme) package to set up an MQTT broker.
   - `quiz/` defines a state machine for running quiz sessions, publishing questions and answers to the broker.
@@ -30,7 +30,7 @@ The project provides 3 servers, all written in [Go](https://go.dev/), with a Doc
 
 The project uses Docker Compose to coordinate containers, with a config for local development defined in `docker-compose.yml`, and a production config in `docker-compose-prod.yml`. The system has been deployed on a [DigitalOcean](https://www.digitalocean.com/) Virtual Private Server, but could be deployed anywhere that supports Docker.
 
-For production, the servers expect a TLS certificate (`tls-cert.pem`) and key (`tls-key.pem`) in their respective `tls` directories (`web/server/tls`, `webrtc/signals/tls`, `mqtt/broker/tls`). This is required, since the web browser can only access the webcam when the app is served over HTTPS.
+For production, the servers expect a TLS certificate (`tls-cert.pem`) and key (`tls-key.pem`) in their respective `tls` directories (`web/server/tls`, `webrtc/signaling/tls`, `mqtt/broker/tls`). This is required, since the web browser can only access the webcam when the app is served over HTTPS.
 
 The below deployment diagram shows the components in the system and the relations between them.
 

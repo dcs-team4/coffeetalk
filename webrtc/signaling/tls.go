@@ -1,4 +1,4 @@
-package signals
+package signaling
 
 import (
 	"crypto/tls"
