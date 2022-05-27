@@ -1,6 +1,5 @@
 import { env } from "../env.js";
-import { getUsername } from "../user.js";
-import { leaveSession } from "../session.js";
+import { inSession, leaveSession } from "../session.js";
 import {
   sendVideoOffer,
   receiveVideoOffer,
@@ -28,12 +27,13 @@ let socket;
 export let socketOpen = false;
 
 /**
- * Message types configured on the WebRTC server.
+ * Message types configured on the WebRTC signaling server.
  * Should be updated if the server configuration changes.
+ * @type {messages.MessageTypes}
  */
-export const messages = Object.freeze({
-  VIDEO_OFFER: "video-offer",
+export const messages = {
   VIDEO_ANSWER: "video-answer",
+  VIDEO_OFFER: "video-offer",
   ICE_CANDIDATE: "new-ice-candidate",
   JOIN_STREAM: "join-stream",
   CONNECTION_SUCCESS: "connection-success",
@@ -41,11 +41,11 @@ export const messages = Object.freeze({
   LEAVE_STREAM: "leave-stream",
   USER_LEFT: "user-left",
   ERROR: "error",
-});
+};
 
 /**
- * Serializes the given message object to JSON, and sends it to the WebRTC signaling server.
- * @param {any} message
+ * Serializes the given message to JSON, and sends it to the WebRTC signaling server.
+ * @param {messages.SendableMessage} message
  */
 export function sendWebRTCMessage(message) {
   if (!socket || !socketOpen) {
@@ -86,10 +86,12 @@ export function connectWebRTCSocket() {
 
 /**
  * Handles the incoming WebSocket message.
- * @param {MessageEvent<any>} event
+ * @param {MessageEvent} event
  */
 function handleMessage(event) {
+  /** @type {messages.ReceivableMessage} */
   const message = JSON.parse(event.data);
+
   console.log("Received from WebRTC server:", message);
 
   switch (message.type) {
@@ -102,25 +104,23 @@ function handleMessage(event) {
     case messages.ICE_CANDIDATE:
       receiveICECandidate(message.from, message.sdp);
       break;
-    case messages.CONNECTION_SUCCESS:
-      setParticipantCount(message.participantCount);
-      break;
     case messages.USER_JOINED:
       incrementParticipantCount();
-
-      const user = getUsername();
-      if (user.ok) sendVideoOffer(message.username);
-
+      if (inSession) sendVideoOffer(message.username);
       break;
     case messages.USER_LEFT:
       decrementParticipantCount();
       closePeerConnection(message.username);
       break;
+    case messages.CONNECTION_SUCCESS:
+      setParticipantCount(message.participantCount);
+      break;
     case messages.ERROR:
       console.log(`Error from WebRTC server:\n${message.errorMessage}`);
       break;
-    default:
-      console.log(`Unrecognized WebRTC message type: ${message.type}`);
+    default: {
+      console.log("WebRTC message not recognized.");
+    }
   }
 }
 

@@ -5,7 +5,7 @@
     "checkJs": true,
     "strict": true
   },
-  "include": ["static/scripts", "js-types"],
+  "include": ["static/scripts"],
   "typeAcquisition": {
     "include": ["paho-mqtt"]
   }

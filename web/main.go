@@ -13,6 +13,7 @@ import (
 var templatesDir embed.FS
 
 // Embeds the "static" directory in this Go binary, for serving of JS and CSS files.
+// Excludes directories starting with _, such as _types, which we do not want to serve.
 //go:embed static
 var staticDir embed.FS
 

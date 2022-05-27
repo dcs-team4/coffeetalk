@@ -1,26 +1,16 @@
-import { messages, sendWebRTCMessage } from "./socket.js";
+import { sendWebRTCMessage, messages } from "./socket.js";
 import { DOM, createPeerVideoElement } from "../dom.js";
 
 /**
- * Type for object containing WebRTC connection to peer in the stream, and the video element for
- * that peer's stream, along with the video's container element.
- * Video and container are undefined until initialized.
- * @typedef {Object} Peer
- * @property {RTCPeerConnection} connection
- * @property {HTMLElement} [videoContainer]
- * @property {HTMLVideoElement} [video]
- */
-
-/**
  * State of this user's current peer connections, mapping usernames to peers.
- * @type {{ [username: string]: Peer }}
+ * @type {{ [username: string]: types.Peer }}
  */
 const peers = {};
 
 /**
  * Tries to get a peer of the given username.
  * @param {string} username
- * @returns {(Peer & { ok: true }) | { ok: false }}
+ * @returns {(types.Peer & { ok: true }) | { ok: false }}
  */
 function getPeer(username) {
   if (!peers.hasOwnProperty(username)) {
@@ -97,11 +87,13 @@ export async function receiveVideoOffer(sender, sdp) {
     return;
   }
 
-  sendWebRTCMessage({
-    type: messages.VIDEO_ANSWER,
-    to: sender,
-    sdp: peer.connection.localDescription,
-  });
+  if (peer.connection.localDescription) {
+    sendWebRTCMessage({
+      type: messages.VIDEO_ANSWER,
+      to: sender,
+      sdp: peer.connection.localDescription,
+    });
+  }
 }
 
 /**
@@ -178,7 +170,7 @@ export function closePeerConnections() {
 /**
  * Intitializes a peer connection with the given peer name, and returns the peer.
  * @param {string} peerName
- * @returns {Peer}
+ * @returns {types.Peer}
  */
 export function createPeerConnection(peerName) {
   // Initializes the peer connection with a STUN service (Session Traversal Utilities for NAT).
@@ -217,7 +209,7 @@ export function createPeerConnection(peerName) {
 
 /**
  * Handles incoming video stream on the peer connection.
- * @param {RTCTrackEvent} event, @param {Peer} peer, @param {string} peerName
+ * @param {RTCTrackEvent} event, @param {types.Peer} peer, @param {string} peerName
  */
 function handleTrack(event, peer, peerName) {
   if (!peer.video) {
@@ -231,22 +223,24 @@ function handleTrack(event, peer, peerName) {
 
 /**
  * Handles event for performing ICE negotiation.
- * @param {Peer} peer, @param {string} peerName
+ * @param {types.Peer} peer, @param {string} peerName
  */
 async function handleNegotiationNeeded(peer, peerName) {
   try {
     const offer = await peer.connection.createOffer();
     await peer.connection.setLocalDescription(offer);
   } catch (error) {
-    console.log(error);
+    console.log("Error in ICE negotiation:", error);
     return;
   }
 
-  sendWebRTCMessage({
-    type: messages.VIDEO_OFFER,
-    to: peerName,
-    sdp: peer.connection.localDescription,
-  });
+  if (peer.connection.localDescription) {
+    sendWebRTCMessage({
+      type: messages.VIDEO_OFFER,
+      to: peerName,
+      sdp: peer.connection.localDescription,
+    });
+  }
 }
 
 /**
@@ -255,17 +249,13 @@ async function handleNegotiationNeeded(peer, peerName) {
  */
 function handleICECandidate(event, peerName) {
   if (event.candidate) {
-    sendWebRTCMessage({
-      type: messages.ICE_CANDIDATE,
-      to: peerName,
-      sdp: event.candidate,
-    });
+    sendWebRTCMessage({ type: messages.ICE_CANDIDATE, to: peerName, sdp: event.candidate });
   }
 }
 
 /**
  * Handles changes in the ICE connection state with the given peer.
- * @param {Peer} peer, @param {string} peerName
+ * @param {types.Peer} peer, @param {string} peerName
  */
 function handleICEConnectionStateChange(peer, peerName) {
   switch (peer.connection.iceConnectionState) {
@@ -278,7 +268,7 @@ function handleICEConnectionStateChange(peer, peerName) {
 
 /**
  * Handles changes in the signaling state with the given peer.
- * @param {Peer} peer, @param {string} peerName
+ * @param {types.Peer} peer, @param {string} peerName
  */
 function handleSignalingStateChange(peer, peerName) {
   if (peer.connection.signalingState === "closed") {

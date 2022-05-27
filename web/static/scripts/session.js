@@ -7,7 +7,7 @@ import {
 import { connectMQTT, disconnectMQTT } from "./mqtt.js";
 import { login } from "./user.js";
 import { closePeerConnections } from "./webrtc/peers.js";
-import { messages, sendWebRTCMessage } from "./webrtc/socket.js";
+import { sendWebRTCMessage, messages } from "./webrtc/socket.js";
 
 /** Whether the user has joined the CoffeeTalk session. */
 export let inSession = false;
