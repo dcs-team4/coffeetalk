@@ -26,11 +26,13 @@ func Start(socketPort string, tcpPort string) *mqtt.Server {
 	// Listens for WebSocket connections on the given socketPort.
 	socket := listeners.NewWebsocket("socket1", ":"+socketPort)
 	err := server.AddListener(socket, listenerConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Listens for TCP connections on the given tcpPort.
 	tcp := listeners.NewTCP("tcp1", ":"+tcpPort)
 	err = server.AddListener(tcp, listenerConfig)
-
 	if err != nil {
 		log.Fatal(err)
 	}
