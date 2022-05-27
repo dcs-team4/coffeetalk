@@ -4,63 +4,64 @@ package signals
 const (
 	MsgVideoOffer        string = "video-offer"
 	MsgVideoAnswer       string = "video-answer"
-	MsgICECandidate      string = "new-ice-candidate"
+	MsgICECandidate      string = "ice-candidate"
 	MsgJoinStream        string = "join-stream"
-	MsgConnectionSuccess string = "connection-success"
-	MsgUserJoined        string = "user-joined"
 	MsgLeaveStream       string = "leave-stream"
-	MsgUserLeft          string = "user-left"
+	MsgPeerJoined        string = "peer-joined"
+	MsgPeerLeft          string = "peer-left"
+	MsgConnectionSuccess string = "connection-success"
 	MsgError             string = "error"
 )
 
 // Base struct to embed in all message types.
-type BaseMessage struct {
+type Message struct {
 	// The kind of message that is sent.
 	// Messages that share the same type should always have the same structure.
 	Type string `json:"type"`
 }
 
-// Utility struct to embed in messages that are to be sent directly from one user to another.
-type TargetedMessage struct {
+// Message sent between two clients when initiating a peer-to-peer video stream between each other.
+type PeerExchangeMessage struct {
+	Message // Type: MsgVideoOffer/MsgVideoAnswer/MsgICECandidate
+
 	// Username of sender.
 	From string `json:"from"`
 
-	// Username of destination.
+	// Username of receiving peer.
 	To string `json:"to"`
-}
 
-// Message sent between two clients when initiating a video stream between each other.
-// The ICE (Interactive Connectivity Establishment) protocol is used to negotiate the connection
-// between two peers. This message allows clients to exchange ICE candidates between each other.
-type VideoExchangeMessage struct {
-	BaseMessage     // Type: MsgVideoOffer/MsgVideoAnswer/MsgICECandidate.
-	TargetedMessage // Sender and receiver of video offer/answer.
-
-	// Session Description Protocol object: Describes a client's video stream config in order to
-	// properly set up a peer-to-peer stream.
+	// WebRTC data for setting up peer-to-peer connection. Format depends on message type.
+	//
+	// For video offer/answer messages:
+	// SDP (Session Description Protocol) object with proposed configuration for the call.
+	//
+	// For ICE (Interactive Connectivity Establishment) candidate messages:
+	// Candidate object used to negotiate peer-to-peer connection setup.
+	//
 	// Typed as any, as the server only forwards the message and does not care about its type.
-	SDP any `json:"sdp"`
+	Data any `json:"data"`
 }
 
-// Message with a username field, for when a new user wants to join the stream, to signal to other
-// users that a new user has joined, or to signal to other users that a user has left.
-type NameMessage struct {
-	BaseMessage // Type: MsgJoinStream/MsgUserJoined/MsgUserLeft
+// Message for signaling changes in a user's peer status: when a user wants to join the peer-to-peer
+// stream, or to signal to other peers that a peer has joined or left.
+type PeerStatusMessage struct {
+	Message // Type: MsgJoinStream/MsgPeerJoined/MsgPeerLeft
 
-	// The username the user wishes to use in the stream.
+	// Username of the peer affected by the message.
 	Username string `json:"username"`
 }
 
 // Message sent when a user successfully establishes a socket connection to the server.
 type ConnectionSuccessMessage struct {
-	BaseMessage // Type: MsgConnectionSuccess
+	Message // Type: MsgConnectionSuccess
 
-	ParticipantCount int `json:"participantCount"`
+	// Number of active peers in the stream.
+	PeerCount int `json:"peerCount"`
 }
 
 // Message sent from server to client when a received message causes an error.
 type ErrorMessage struct {
-	BaseMessage // Type: MsgError
+	Message // Type: MsgError
 
 	ErrorMessage string `json:"errorMessage"`
 }

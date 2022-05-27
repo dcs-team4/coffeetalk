@@ -34,12 +34,12 @@ export let socketOpen = false;
 export const messages = {
   VIDEO_ANSWER: "video-answer",
   VIDEO_OFFER: "video-offer",
-  ICE_CANDIDATE: "new-ice-candidate",
+  ICE_CANDIDATE: "ice-candidate",
   JOIN_STREAM: "join-stream",
-  CONNECTION_SUCCESS: "connection-success",
-  USER_JOINED: "user-joined",
   LEAVE_STREAM: "leave-stream",
-  USER_LEFT: "user-left",
+  PEER_JOINED: "peer-joined",
+  PEER_LEFT: "peer-left",
+  CONNECTION_SUCCESS: "connection-success",
   ERROR: "error",
 };
 
@@ -96,24 +96,24 @@ function handleMessage(event) {
 
   switch (message.type) {
     case messages.VIDEO_OFFER:
-      receiveVideoOffer(message.from, message.sdp);
+      receiveVideoOffer(message.from, message.data);
       break;
     case messages.VIDEO_ANSWER:
-      receiveVideoAnswer(message.from, message.sdp);
+      receiveVideoAnswer(message.from, message.data);
       break;
     case messages.ICE_CANDIDATE:
-      receiveICECandidate(message.from, message.sdp);
+      receiveICECandidate(message.from, message.data);
       break;
-    case messages.USER_JOINED:
+    case messages.PEER_JOINED:
       incrementParticipantCount();
       if (inSession) sendVideoOffer(message.username);
       break;
-    case messages.USER_LEFT:
+    case messages.PEER_LEFT:
       decrementParticipantCount();
       closePeerConnection(message.username);
       break;
     case messages.CONNECTION_SUCCESS:
-      setParticipantCount(message.participantCount);
+      setParticipantCount(message.peerCount);
       break;
     case messages.ERROR:
       console.log(`Error from WebRTC server:\n${message.errorMessage}`);

@@ -57,7 +57,7 @@ func (user *User) JoinStream(username string) error {
 			continue
 		}
 
-		otherUser.Socket.WriteJSON(NameMessage{BaseMessage{MsgUserJoined}, username})
+		otherUser.Socket.WriteJSON(PeerStatusMessage{Message{MsgPeerJoined}, username})
 	}
 
 	return nil
@@ -83,7 +83,7 @@ func (user *User) HandleUserLeft() {
 			continue
 		}
 
-		otherUser.Socket.WriteJSON(NameMessage{BaseMessage{MsgUserLeft}, user.Name})
+		otherUser.Socket.WriteJSON(PeerStatusMessage{Message{MsgPeerLeft}, user.Name})
 	}
 }
 

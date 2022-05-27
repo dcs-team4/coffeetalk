@@ -1,43 +1,37 @@
-/** Message types as defined by the WebRTC signaling server. */
+/** Type declarations for messages as defined by the WebRTC signaling server. */
 declare namespace messages {
   type MessageTypes = {
     VIDEO_OFFER: "video-offer";
     VIDEO_ANSWER: "video-answer";
-    ICE_CANDIDATE: "new-ice-candidate";
+    ICE_CANDIDATE: "ice-candidate";
     JOIN_STREAM: "join-stream";
     LEAVE_STREAM: "leave-stream";
-    USER_JOINED: "user-joined";
-    USER_LEFT: "user-left";
+    PEER_JOINED: "peer-joined";
+    PEER_LEFT: "peer-left";
     CONNECTION_SUCCESS: "connection-success";
     ERROR: "error";
   };
 
   /** Messages that the WebRTC server expects the client to send. */
-  type SendableMessage = VideoExchange | ICECandidate | JoinStream | LeaveStream;
+  type SendableMessage = PeerExchange | JoinStream | LeaveStream;
 
   /** Messages that the WebRTC server expects the client to receive. */
-  type ReceivableMessage =
-    | ReceivedVideoExchange
-    | ReceivedICECandidate
-    | PeerChange
-    | ConnectionSuccess
-    | Error;
+  type ReceivableMessage = ReceivedPeerExchange | PeerStatus | ConnectionSuccess | Error;
 
-  type VideoExchange = {
-    type: MessageTypes["VIDEO_OFFER" | "VIDEO_ANSWER"];
+  type PeerExchange = {
     to: string;
-    sdp: RTCSessionDescriptionInit;
-  };
+  } & (
+    | {
+        type: MessageTypes["VIDEO_OFFER" | "VIDEO_ANSWER"];
+        data: RTCSessionDescription;
+      }
+    | {
+        type: MessageTypes["ICE_CANDIDATE"];
+        data: RTCIceCandidateInit;
+      }
+  );
 
-  type ReceivedVideoExchange = VideoExchange & { from: string };
-
-  type ICECandidate = {
-    type: MessageTypes["ICE_CANDIDATE"];
-    to: string;
-    sdp: RTCIceCandidateInit;
-  };
-
-  type ReceivedICECandidate = ICECandidate & { from: string };
+  type ReceivedPeerExchange = PeerExchange & { from: string };
 
   type JoinStream = {
     type: MessageTypes["JOIN_STREAM"];
@@ -48,14 +42,14 @@ declare namespace messages {
     type: MessageTypes["LEAVE_STREAM"];
   };
 
-  type PeerChange = {
-    type: MessageTypes["USER_JOINED" | "USER_LEFT"];
+  type PeerStatus = {
+    type: MessageTypes["PEER_JOINED" | "PEER_LEFT"];
     username: string;
   };
 
   type ConnectionSuccess = {
     type: MessageTypes["CONNECTION_SUCCESS"];
-    participantCount: number;
+    peerCount: number;
   };
 
   type Error = {

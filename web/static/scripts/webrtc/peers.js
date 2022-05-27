@@ -66,14 +66,13 @@ export async function sendVideoOffer(peerName) {
 
 /**
  * Handles a received video stream offer from a peer.
- * @param {string} sender Peer username.
- * @param {RTCSessionDescriptionInit} sdp Session Description Protocol data.
+ * @param {string} senderName, @param {RTCSessionDescriptionInit} sessionDescription
  */
-export async function receiveVideoOffer(sender, sdp) {
-  const peer = createPeerConnection(sender);
+export async function receiveVideoOffer(senderName, sessionDescription) {
+  const peer = createPeerConnection(senderName);
 
   // Configures the WebRTC session.
-  const session = new RTCSessionDescription(sdp);
+  const session = new RTCSessionDescription(sessionDescription);
   await peer.connection.setRemoteDescription(session);
 
   sendLocalStream(peer.connection);
@@ -90,37 +89,34 @@ export async function receiveVideoOffer(sender, sdp) {
   if (peer.connection.localDescription) {
     sendWebRTCMessage({
       type: messages.VIDEO_ANSWER,
-      to: sender,
-      sdp: peer.connection.localDescription,
+      to: senderName,
+      data: peer.connection.localDescription,
     });
   }
 }
 
 /**
  * Handles a received answer to a video stream offer, finalizing the WebRTC connection.
- * @param {string} sender Peer username.
- * @param {RTCSessionDescriptionInit} sdp Session Description Protocol data.
+ * @param {string} senderName, @param {RTCSessionDescriptionInit} sessionDescription
  */
-export async function receiveVideoAnswer(sender, sdp) {
-  const peer = getPeer(sender);
+export async function receiveVideoAnswer(senderName, sessionDescription) {
+  const peer = getPeer(senderName);
   if (!peer.ok) return;
 
   // Finalizes peer connection configuration.
-  const session = new RTCSessionDescription(sdp);
+  const session = new RTCSessionDescription(sessionDescription);
   await peer.connection.setRemoteDescription(session);
 }
 
 /**
- * Handles received ICE (Interactive Connectivity Establishment protocol) candidate for setting up
- * WebRTC connection.
- * @param {string} sender Peer username.
- * @param {RTCIceCandidateInit} sdp SDP candidate used for ICE.
+ * Handles ICE (Interactive Connectivity Establishment) candidate for setting up WebRTC connection.
+ * @param {string} senderName, @param {RTCIceCandidateInit} iceCandidate
  */
-export async function receiveICECandidate(sender, sdp) {
-  const peer = getPeer(sender);
+export async function receiveICECandidate(senderName, iceCandidate) {
+  const peer = getPeer(senderName);
   if (!peer.ok) return;
 
-  const candidate = new RTCIceCandidate(sdp);
+  const candidate = new RTCIceCandidate(iceCandidate);
 
   try {
     await peer.connection.addIceCandidate(candidate);
@@ -145,17 +141,17 @@ export function closePeerConnection(peerName) {
     }
   }
 
-  // Remove video from the DOM.
+  // Removes video from the DOM.
   if (peer.videoContainer) {
     DOM.videos().removeChild(peer.videoContainer);
   }
 
-  // Stop peer-to-peer communication.
+  // Stops peer-to-peer communication.
   for (const transceiver of peer.connection.getTransceivers()) {
     transceiver.stop();
   }
 
-  // Close connection and clear peer.
+  // Closes connection and clear peer.
   peer.connection.close();
   delete peers[peerName];
 }
@@ -238,7 +234,7 @@ async function handleNegotiationNeeded(peer, peerName) {
     sendWebRTCMessage({
       type: messages.VIDEO_OFFER,
       to: peerName,
-      sdp: peer.connection.localDescription,
+      data: peer.connection.localDescription,
     });
   }
 }
@@ -249,7 +245,7 @@ async function handleNegotiationNeeded(peer, peerName) {
  */
 function handleICECandidate(event, peerName) {
   if (event.candidate) {
-    sendWebRTCMessage({ type: messages.ICE_CANDIDATE, to: peerName, sdp: event.candidate });
+    sendWebRTCMessage({ type: messages.ICE_CANDIDATE, to: peerName, data: event.candidate });
   }
 }
 

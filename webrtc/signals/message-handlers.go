@@ -30,11 +30,11 @@ func (user *User) Listen() {
 // Handles the incoming message from the given user.
 func (user *User) HandleMessage(rawMessage []byte) {
 	// First deserializes the message to a BaseMessage for checking its message type.
-	var baseMessage BaseMessage
+	var baseMessage Message
 	err := json.Unmarshal(rawMessage, &baseMessage)
 	if err != nil {
 		errMsg := "Invalid message"
-		user.Socket.WriteJSON(ErrorMessage{BaseMessage{MsgError}, errMsg})
+		user.Socket.WriteJSON(ErrorMessage{Message{MsgError}, errMsg})
 		log.Printf("%v: %v\n", errMsg, err)
 		return
 	}
@@ -47,22 +47,20 @@ func (user *User) HandleMessage(rawMessage []byte) {
 	case MsgVideoAnswer:
 		fallthrough
 	case MsgICECandidate:
-		// Deserializes the message to a video exchange message.
-		var videoExchange VideoExchangeMessage
-		if !DeserializeMsg(rawMessage, &videoExchange, user) {
+		var peerExchange PeerExchangeMessage
+		if !DeserializeMsg(rawMessage, &peerExchange, user) {
 			return
 		}
 
-		// Validates the message.
-		target, ok := videoExchange.Validate(user)
+		target, ok := peerExchange.Validate(user)
 		if !ok {
 			return
 		}
 
-		// Forwards the video offer message to the intended target.
-		target.WriteJSON(videoExchange)
+		// Forwards the peer exchange message to the intended target.
+		target.WriteJSON(peerExchange)
 	case MsgJoinStream:
-		var joinStream NameMessage
+		var joinStream PeerStatusMessage
 		if !DeserializeMsg(rawMessage, &joinStream, user) {
 			return
 		}
@@ -87,7 +85,7 @@ func DeserializeMsg(rawMessage []byte, pointer any, sender *User) (ok bool) {
 
 	if err != nil {
 		errMsg := "Invalid message received"
-		sender.Socket.WriteJSON(ErrorMessage{BaseMessage{MsgError}, errMsg})
+		sender.Socket.WriteJSON(ErrorMessage{Message{MsgError}, errMsg})
 		log.Printf("%v: %v\n", errMsg, err)
 		return false
 	}
@@ -95,19 +93,19 @@ func DeserializeMsg(rawMessage []byte, pointer any, sender *User) (ok bool) {
 	return true
 }
 
-// Validates the given TargetedMessage. If valid, sets the message's From field to the given
+// Validates the given video exchange message. If valid, sets the message's From field to the given
 // sender's username, and returns the target's connection. Otherwise, returns ok=false.
-func (msg *TargetedMessage) Validate(sender *User) (target *websocket.Conn, ok bool) {
-	targetUser, ok := users.GetByName(msg.To)
+func (message *PeerExchangeMessage) Validate(sender *User) (target *websocket.Conn, ok bool) {
+	targetUser, ok := users.GetByName(message.To)
 
 	if !ok {
 		errMsg := "Invalid message target"
-		sender.Socket.WriteJSON(ErrorMessage{BaseMessage{MsgError}, errMsg})
-		log.Printf("%v: %v\n", errMsg, msg.To)
+		sender.Socket.WriteJSON(ErrorMessage{Message{MsgError}, errMsg})
+		log.Printf("%v: %v\n", errMsg, message.To)
 		return nil, false
 	}
 
-	msg.From = sender.Name
+	message.From = sender.Name
 
 	return targetUser.Socket, true
 }
