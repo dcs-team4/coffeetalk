@@ -35,7 +35,7 @@ func (user User) InStream() bool {
 // Sets the user's name to the given username, and notifies other users that a new user has joined.
 func (user *User) JoinStream(username string) error {
 	if username == "" {
-		return errors.New("Username cannot be blank.")
+		return errors.New("username cannot be blank")
 	}
 
 	users.Lock.RLock()
@@ -43,7 +43,7 @@ func (user *User) JoinStream(username string) error {
 
 	for _, user := range users.Map {
 		if user.Name == username {
-			return errors.New("Username already taken.")
+			return errors.New("username already taken")
 		}
 	}
 
