@@ -1,6 +1,6 @@
 # CoffeeTalk
 
-CoffeeTalk is an inter-office communication system using WebRTC, WebSockets and MQTT. It is served as a web app, allowing users to stream video and audio peer-to-peer, and even play quizzes together!
+CoffeeTalk is a video chat application using WebRTC, WebSockets and MQTT. It is served as a web app, allowing users to stream video and audio peer-to-peer, and even play quizzes together!
 
 **Table of Contents**
 
@@ -10,7 +10,7 @@ CoffeeTalk is an inter-office communication system using WebRTC, WebSockets and 
 
 ## Project Structure
 
-The project provides 3 servers, all written in [Go](https://go.dev/), with a Docker container configured for each.
+The application consists of 3 servers, all written in [Go](https://go.dev/), with a Docker container configured for each.
 
 - `web/` contains a web server, serving the CoffeeTalk web app.
   - `server/` sets up the web server, defines the app's routes, and configures TLS and app environment.
@@ -59,7 +59,7 @@ The web application should now be accessible at `localhost:3000`, with the WebRT
 
 ### Type Hinting
 
-The web app uses [JSDoc](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) for type hinting its JavaScript files, configured in `web/jsconfig.json`. To get full [type hinting of external libraries](https://code.visualstudio.com/docs/nodejs/working-with-javascript#_typings-and-automatic-type-acquisition) when developing in VSCode, install Node.js: https://nodejs.org/en/.
+The web app uses [JSDoc](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) for type hinting its JavaScript files through comments. It also uses TypeScript for custom type declarations, configured in `web/tsconfig.json`. To get full [type hinting of external libraries](https://code.visualstudio.com/docs/nodejs/working-with-javascript#_typings-and-automatic-type-acquisition) when developing in VSCode, install Node.js: https://nodejs.org/en/.
 
 ## Credits
 
@@ -67,7 +67,7 @@ Special thanks to:
 
 - Frank Kraemer, for running the [Design of Communicating Systems](https://www.ntnu.edu/studies/courses/TTM4115) course at NTNU, which this project was a part of.
 - Mozilla, for their great [documentation and tutorials for WebRTC](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling), which was invaluable to our implementation.
-- `maniart`, for the [Diffy.js library](https://github.com/maniart/diffyjs#readme).
 - Gorilla, for the [Go WebSocket package](https://github.com/gorilla/websocket#readme).
 - `mochi-co`, for the [MQTT broker package](https://github.com/mochi-co/mqtt#readme).
-- The Eclipse Foundation, for the [Paho JavaScript MQTT Client](https://www.eclipse.org/paho/index.php?page=clients/js/index.php).
+- The Eclipse Foundation, for the [Paho JavaScript MQTT client](https://www.eclipse.org/paho/index.php?page=clients/js/index.php).
+- `maniart`, for the [Diffy.js library](https://github.com/maniart/diffyjs#readme).
