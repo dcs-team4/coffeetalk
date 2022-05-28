@@ -46,8 +46,8 @@ func NewUser(socket *websocket.Conn) (user *User, userID int) {
 	socket.SetCloseHandler(func(code int, text string) error {
 		removeUser(userID)
 
-		if user.InStream() {
-			user.HandleStreamLeft()
+		if user.IsPeer() {
+			user.HandlePeerLeft()
 		}
 
 		log.Printf("Socket with client ID %v closed.\n", userID)
@@ -68,7 +68,7 @@ func (user *User) Register() (userID int) {
 }
 
 // Returns whether the given user has joined the peer-to-peer stream.
-func (user *User) InStream() bool {
+func (user *User) IsPeer() bool {
 	user.Lock.RLock()
 	defer user.Lock.RUnlock()
 
@@ -76,13 +76,13 @@ func (user *User) InStream() bool {
 }
 
 // Returns number of users who have joined the peer-to-peer stream.
-func (users *Users) InStream() int {
+func (users *Users) PeerCount() int {
 	users.Lock.RLock()
 	defer users.Lock.RUnlock()
 
 	count := 0
 	for _, user := range users.Map {
-		if user.InStream() {
+		if user.IsPeer() {
 			count++
 		}
 	}
@@ -92,7 +92,7 @@ func (users *Users) InStream() int {
 
 // Joins the peer-to-peer stream with the given username, and notifies other users.
 // Returns error if joining failed.
-func (user *User) JoinStream(username string) error {
+func (user *User) JoinPeers(username string) error {
 	err := user.SetName(username)
 	if err != nil {
 		return err
@@ -133,17 +133,17 @@ func (user *User) SetName(username string) error {
 }
 
 // Removes the user from the peer-to-peer stream, and notifies other users.
-func (user *User) LeaveStream() {
+func (user *User) LeavePeers() {
 	user.Lock.Lock()
 	defer user.Lock.Unlock()
 
-	user.HandleStreamLeft()
+	user.HandlePeerLeft()
 
 	user.Name = ""
 }
 
 // Sends a message to all other users that the given user has left the peer-to-peer stream.
-func (user *User) HandleStreamLeft() {
+func (user *User) HandlePeerLeft() {
 	users.Lock.RLock()
 	defer users.Lock.RUnlock()
 

@@ -59,16 +59,16 @@ function sendLocalStream(peerConnection) {
  * and starts sending this user's stream to them.
  * @param {string} peerName
  */
-export async function sendVideoOffer(peerName) {
+export async function sendPeerOffer(peerName) {
   const peer = createPeerConnection(peerName);
   sendLocalStream(peer.connection);
 }
 
 /**
- * Handles a received video stream offer from a peer.
+ * Handles a received WebRTC connection offer from a peer.
  * @param {string} senderName, @param {RTCSessionDescriptionInit} sessionDescription
  */
-export async function receiveVideoOffer(senderName, sessionDescription) {
+export async function receivePeerOffer(senderName, sessionDescription) {
   const peer = createPeerConnection(senderName);
 
   // Configures the WebRTC session.
@@ -88,7 +88,7 @@ export async function receiveVideoOffer(senderName, sessionDescription) {
 
   if (peer.connection.localDescription) {
     sendWebRTCMessage({
-      type: messages.VIDEO_ANSWER,
+      type: messages.PEER_ANSWER,
       to: senderName,
       data: peer.connection.localDescription,
     });
@@ -96,10 +96,10 @@ export async function receiveVideoOffer(senderName, sessionDescription) {
 }
 
 /**
- * Handles a received answer to a video stream offer, finalizing the WebRTC connection.
+ * Handles a received answer from a peer to a previously sent WebRTC connection offer.
  * @param {string} senderName, @param {RTCSessionDescriptionInit} sessionDescription
  */
-export async function receiveVideoAnswer(senderName, sessionDescription) {
+export async function receivePeerAnswer(senderName, sessionDescription) {
   const peer = getPeer(senderName);
   if (!peer.ok) return;
 
@@ -151,7 +151,7 @@ export function closePeerConnection(peerName) {
     transceiver.stop();
   }
 
-  // Closes connection and clear peer.
+  // Closes connection and clears peer.
   peer.connection.close();
   delete peers[peerName];
 }
@@ -232,7 +232,7 @@ async function handleNegotiationNeeded(peer, peerName) {
 
   if (peer.connection.localDescription) {
     sendWebRTCMessage({
-      type: messages.VIDEO_OFFER,
+      type: messages.PEER_OFFER,
       to: peerName,
       data: peer.connection.localDescription,
     });

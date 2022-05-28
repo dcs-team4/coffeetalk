@@ -18,7 +18,7 @@ export function joinSession() {
   const user = login();
   if (!user.ok) return;
 
-  sendWebRTCMessage({ type: messages.JOIN_STREAM, username: user.name });
+  sendWebRTCMessage({ type: messages.JOIN_PEERS, username: user.name });
   connectMQTT();
   displayStream();
   incrementPeerCount();
@@ -35,7 +35,7 @@ export function joinSession() {
  */
 export function leaveSession() {
   closePeerConnections();
-  sendWebRTCMessage({ type: messages.LEAVE_STREAM });
+  sendWebRTCMessage({ type: messages.LEAVE_PEERS });
   disconnectMQTT();
   displayLogin();
   decrementPeerCount();

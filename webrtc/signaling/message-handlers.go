@@ -39,10 +39,10 @@ func (user *User) HandleMessage(rawMessage []byte) {
 
 	// Handles the message according to its type.
 	switch baseMessage.Type {
-	// Fallthrough because video offer, answer and ICE candidate messages are all handled the same.
-	case MsgVideoOffer:
+	// Fallthrough because peer offer, answer and ICE candidate messages are all handled the same.
+	case MsgPeerOffer:
 		fallthrough
-	case MsgVideoAnswer:
+	case MsgPeerAnswer:
 		fallthrough
 	case MsgICECandidate:
 		var peerExchange PeerExchangeMessage
@@ -57,19 +57,19 @@ func (user *User) HandleMessage(rawMessage []byte) {
 
 		// Forwards the peer exchange message to the intended target.
 		target.WriteJSON(peerExchange)
-	case MsgJoinStream:
+	case MsgJoinPeers:
 		var joinStream PeerStatusMessage
 		if !DeserializeMsg(rawMessage, &joinStream, user) {
 			return
 		}
 
-		log.Printf("%v message received from: %v\n", MsgJoinStream, joinStream.Username)
+		log.Printf("%v message received from: %v\n", MsgJoinPeers, joinStream.Username)
 
-		user.JoinStream(joinStream.Username)
-	case MsgLeaveStream:
-		log.Printf("%v message received from: %v\n", MsgLeaveStream, user.Name)
+		user.JoinPeers(joinStream.Username)
+	case MsgLeavePeers:
+		log.Printf("%v message received from: %v\n", MsgLeavePeers, user.Name)
 
-		user.LeaveStream()
+		user.LeavePeers()
 	default:
 		log.Printf("Unrecognized message type received: %v\n", baseMessage.Type)
 	}

@@ -38,5 +38,5 @@ func connectSocket(res http.ResponseWriter, req *http.Request) {
 	log.Printf("Connection established with client ID %v.\n", userID)
 
 	// Sends connection success message back, with number of peers in call.
-	socket.WriteJSON(ConnectionSuccessMessage{Message{MsgConnectionSuccess}, users.InStream()})
+	socket.WriteJSON(ConnectionSuccessMessage{Message{MsgConnectionSuccess}, users.PeerCount()})
 }

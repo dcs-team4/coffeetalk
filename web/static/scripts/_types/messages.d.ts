@@ -1,11 +1,11 @@
 /** Type declarations for messages as defined by the WebRTC signaling server. */
 declare namespace messages {
   type MessageTypes = {
-    VIDEO_OFFER: "video-offer";
-    VIDEO_ANSWER: "video-answer";
+    PEER_OFFER: "peer-offer";
+    PEER_ANSWER: "peer-answer";
     ICE_CANDIDATE: "ice-candidate";
-    JOIN_STREAM: "join-stream";
-    LEAVE_STREAM: "leave-stream";
+    JOIN_PEERS: "join-peers";
+    LEAVE_PEERS: "leave-peers";
     PEER_JOINED: "peer-joined";
     PEER_LEFT: "peer-left";
     CONNECTION_SUCCESS: "connection-success";
@@ -13,7 +13,7 @@ declare namespace messages {
   };
 
   /** Messages that the WebRTC server expects the client to send. */
-  type SendableMessage = PeerExchange | JoinStream | LeaveStream;
+  type SendableMessage = PeerExchange | JoinPeers | LeavePeers;
 
   /** Messages that the WebRTC server expects the client to receive. */
   type ReceivableMessage = ReceivedPeerExchange | PeerStatus | ConnectionSuccess | Error;
@@ -22,8 +22,8 @@ declare namespace messages {
     to: string;
   } & (
     | {
-        type: MessageTypes["VIDEO_OFFER" | "VIDEO_ANSWER"];
-        data: RTCSessionDescription;
+        type: MessageTypes["PEER_OFFER" | "PEER_ANSWER"];
+        data: RTCSessionDescriptionInit;
       }
     | {
         type: MessageTypes["ICE_CANDIDATE"];
@@ -33,13 +33,13 @@ declare namespace messages {
 
   type ReceivedPeerExchange = PeerExchange & { from: string };
 
-  type JoinStream = {
-    type: MessageTypes["JOIN_STREAM"];
+  type JoinPeers = {
+    type: MessageTypes["JOIN_PEERS"];
     username: string;
   };
 
-  type LeaveStream = {
-    type: MessageTypes["LEAVE_STREAM"];
+  type LeavePeers = {
+    type: MessageTypes["LEAVE_PEERS"];
   };
 
   type PeerStatus = {

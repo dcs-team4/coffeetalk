@@ -1,9 +1,9 @@
 import { env } from "../env.js";
 import { inSession, leaveSession } from "../session.js";
 import {
-  sendVideoOffer,
-  receiveVideoOffer,
-  receiveVideoAnswer,
+  sendPeerOffer,
+  receivePeerOffer,
+  receivePeerAnswer,
   receiveICECandidate,
   closePeerConnection,
 } from "./peers.js";
@@ -27,11 +27,11 @@ export let socketOpen = false;
  * @type {messages.MessageTypes}
  */
 export const messages = {
-  VIDEO_ANSWER: "video-answer",
-  VIDEO_OFFER: "video-offer",
+  PEER_ANSWER: "peer-answer",
+  PEER_OFFER: "peer-offer",
   ICE_CANDIDATE: "ice-candidate",
-  JOIN_STREAM: "join-stream",
-  LEAVE_STREAM: "leave-stream",
+  JOIN_PEERS: "join-peers",
+  LEAVE_PEERS: "leave-peers",
   PEER_JOINED: "peer-joined",
   PEER_LEFT: "peer-left",
   CONNECTION_SUCCESS: "connection-success",
@@ -90,18 +90,18 @@ function handleMessage(event) {
   console.log("Received from WebRTC server:", message);
 
   switch (message.type) {
-    case messages.VIDEO_OFFER:
-      receiveVideoOffer(message.from, message.data);
+    case messages.PEER_OFFER:
+      receivePeerOffer(message.from, message.data);
       break;
-    case messages.VIDEO_ANSWER:
-      receiveVideoAnswer(message.from, message.data);
+    case messages.PEER_ANSWER:
+      receivePeerAnswer(message.from, message.data);
       break;
     case messages.ICE_CANDIDATE:
       receiveICECandidate(message.from, message.data);
       break;
     case messages.PEER_JOINED:
       incrementPeerCount();
-      if (inSession) sendVideoOffer(message.username);
+      if (inSession) sendPeerOffer(message.username);
       break;
     case messages.PEER_LEFT:
       decrementPeerCount();

@@ -2,11 +2,11 @@ package signaling
 
 // Message types allowed to and from this server.
 const (
-	MsgVideoOffer        string = "video-offer"
-	MsgVideoAnswer       string = "video-answer"
+	MsgPeerOffer         string = "peer-offer"
+	MsgPeerAnswer        string = "peer-answer"
 	MsgICECandidate      string = "ice-candidate"
-	MsgJoinStream        string = "join-stream"
-	MsgLeaveStream       string = "leave-stream"
+	MsgJoinPeers         string = "join-peers"
+	MsgLeavePeers        string = "leave-peers"
 	MsgPeerJoined        string = "peer-joined"
 	MsgPeerLeft          string = "peer-left"
 	MsgConnectionSuccess string = "connection-success"
@@ -20,9 +20,9 @@ type Message struct {
 	Type string `json:"type"`
 }
 
-// Message sent between two clients when initiating a peer-to-peer video stream between each other.
+// Message sent between two clients when initiating a peer-to-peer connection between each other.
 type PeerExchangeMessage struct {
-	Message // Type: MsgVideoOffer/MsgVideoAnswer/MsgICECandidate
+	Message // Type: MsgPeerOffer/MsgPeerAnswer/MsgICECandidate
 
 	// Username of sender.
 	From string `json:"from"`
@@ -32,8 +32,8 @@ type PeerExchangeMessage struct {
 
 	// WebRTC data for setting up peer-to-peer connection. Format depends on message type.
 	//
-	// For video offer/answer messages:
-	// SDP (Session Description Protocol) object with proposed configuration for the call.
+	// For peer offer/answer messages:
+	// SDP (Session Description Protocol) object with initial config proposal for the connection.
 	//
 	// For ICE (Interactive Connectivity Establishment) candidate messages:
 	// Candidate object used to negotiate peer-to-peer connection setup.
