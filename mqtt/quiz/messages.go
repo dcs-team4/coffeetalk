@@ -32,13 +32,11 @@ const (
 func (machine *QuizMachine) StartQuizHandler() events.OnMessage {
 	return func(client events.Client, packet events.Packet) (events.Packet, error) {
 		log.Printf(
-			"Message received (topic: %v, message: %v)\n",
-			packet.TopicName,
-			string(packet.Payload),
+			"Message received (topic: %v, message: %v)\n", packet.TopicName, string(packet.Payload),
 		)
 
 		if packet.TopicName == QuizStatusTopic && string(packet.Payload) == QuizStartMessage {
-			machine.Start <- stm.Trigger{}
+			machine.start <- stm.Trigger{}
 		}
 
 		return packet, nil

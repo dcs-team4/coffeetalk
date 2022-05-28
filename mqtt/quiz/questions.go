@@ -3,7 +3,8 @@ package quiz
 import (
 	_ "embed"
 	"encoding/json"
-	"log"
+	"errors"
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -33,44 +34,52 @@ type Question struct {
 }
 
 // Selects a question pseudorandomly from the global questions list, excluding any question in the
-// given alreadyAsked list.
-func newQuestion(alreadyAsked []Question) Question {
+// given alreadyAsked list. Returns error if it failed to read questions, or all are already asked.
+func newQuestion(alreadyAsked []Question) (Question, error) {
 	// If questions are uninitialized, reads from file first.
 	if len(questions) == 0 {
-		readQuestions()
+		err := readQuestions()
+		if err != nil {
+			return Question{}, err
+		}
 	}
 
 	// Filters out already asked questions.
 	notAsked := make([]Question, 0)
 outerLoop:
-	for _, question := range questions {
+	for _, askable := range questions {
 		for _, asked := range alreadyAsked {
-			if question.ID == asked.ID {
+			if askable.ID == asked.ID {
 				continue outerLoop
 			}
 		}
 
-		notAsked = append(notAsked, question)
+		notAsked = append(notAsked, askable)
 	}
 
-	// Returns a question at a pseudo-random index.
-	return notAsked[rand.Intn(len(notAsked))]
+	if len(notAsked) == 0 {
+		return Question{}, errors.New("tried to get new question when all were asked")
+	}
+
+	// Uses pseudo-random seed to select question.
+	rand.Seed(time.Now().UnixNano())
+	randomQuestion := notAsked[rand.Intn(len(notAsked))]
+	return randomQuestion, nil
 }
 
-// Reads questions from the embedded questions.json file,
-// setting the global questions variable to it.
-func readQuestions() {
+// Reads questions from the embedded questions file, and sets the global questions variable to it.
+// Returns error if file reading failed, or questions are misconfigured.
+func readQuestions() error {
 	err := json.Unmarshal(questionsJson, &questions)
 	if err != nil {
-		log.Fatal("failed to read questions.json")
+		return fmt.Errorf("failed to read questions.json: %w", err)
 	}
 
-	// Crashes if too few questions are configured.
 	if len(questions) < maxQuestionCount {
-		log.Fatalf(
-			"too few configured questions; have %v, want %v\n",
-			len(questions),
-			maxQuestionCount,
+		return fmt.Errorf(
+			"too few configured questions: have %v, want %v", len(questions), maxQuestionCount,
 		)
 	}
+
+	return nil
 }

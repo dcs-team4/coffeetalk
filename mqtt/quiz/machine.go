@@ -1,6 +1,9 @@
 package quiz
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/dcs-team4/coffeetalk/stm"
 	mqtt "github.com/mochi-co/mqtt/server"
 )
@@ -12,7 +15,7 @@ type QuizMachine struct {
 	states stm.States[*QuizMachine]
 
 	// Triggered to start a new quiz session.
-	Start stm.Event
+	start stm.Event
 
 	// Triggered when the time between question and answer has run out.
 	questionTimer stm.Event
@@ -28,9 +31,9 @@ type QuizMachine struct {
 }
 
 // IDs of the quiz machine's states.
-// Uses iota for automatic enumeration (0, 1, 2...).
+// Uses iota for automatic enumeration, +1 to avoid potential clash with zero value.
 const (
-	idleState stm.StateID = iota
+	idleState stm.StateID = iota + 1
 	questionState
 	answerState
 )
@@ -40,11 +43,11 @@ const (
 func NewMachine(broker *mqtt.Server) *QuizMachine {
 	return &QuizMachine{
 		states: stm.States[*QuizMachine]{
-			idleState:     IdleState,
-			questionState: QuestionState,
-			answerState:   AnswerState,
+			idleState:     runIdleState,
+			questionState: runQuestionState,
+			answerState:   runAnswerState,
 		},
-		Start:         make(stm.Event),
+		start:         make(stm.Event),
 		questionTimer: make(stm.Event),
 		answerTimer:   make(stm.Event),
 		questions:     make([]Question, 0),
@@ -61,62 +64,61 @@ func (machine *QuizMachine) States() stm.States[*QuizMachine] {
 // transitioning to new states as they return, until an error occurs.
 func (machine *QuizMachine) Run() error {
 	startState := idleState
-	return stm.RunMachine(machine, startState)
+	err := stm.RunMachine(machine, startState)
+	return err
 }
 
-// Gets the latest question to process in the quiz session.
-// Assumes that there is at least one question in the questions list.
-func (machine QuizMachine) currentQuestion() Question {
+// Gets the latest question to process in the quiz session. Returns error if question list is empty.
+func (machine QuizMachine) currentQuestion() (Question, error) {
 	if len(machine.questions) == 0 {
-		return Question{}
+		return Question{}, errors.New("tried to get question from empty question list")
 	}
 
-	return machine.questions[len(machine.questions)-1]
+	return machine.questions[len(machine.questions)-1], nil
 }
 
 // Waits for a Start event to trigger, then returns the Question state as the next state.
-func IdleState(machine *QuizMachine) (nextState stm.StateID, err error) {
-	<-machine.Start
+func runIdleState(machine *QuizMachine) (nextState stm.StateID, err error) {
+	<-machine.start
 	return questionState, nil
 }
 
-// Adds a new question to the machine's questions list, publishes it to the MQTT broker, then waits
-// for the question timer event before returning the Answer state as the next state.
-func QuestionState(machine *QuizMachine) (nextState stm.StateID, err error) {
-	// Adds a new question to the questions list.
-	machine.questions = append(machine.questions, newQuestion(machine.questions))
+// Adds a new question to the machine's questions list, publishes it to the MQTT broker,
+// then waits for the question timer event before transitioning to the Answer state.
+func runQuestionState(machine *QuizMachine) (nextState stm.StateID, err error) {
+	question, err := newQuestion(machine.questions)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get new quiz question: %w", err)
+	}
+	machine.questions = append(machine.questions, question)
 
-	// Publishes the current question to the MQTT broker.
-	machine.broker.Publish(QuestionTopic, []byte(machine.currentQuestion().Question), true)
+	machine.broker.Publish(QuestionTopic, []byte(question.Question), true)
 
-	// Sets a timer to trigger the question timer event.
 	go stm.SetTimer(questionDuration, machine.questionTimer)
-
-	// Waits for the question timer event.
 	<-machine.questionTimer
 
 	return answerState, nil
 }
 
-// Publishes the answer to the previous question to the MQTT broker. Then, if the quiz has reached
-// its final question, ends the quiz and returns the Idle state; otherwise, waits for the answer
-// timer event before returning the Question state as the next state.
-func AnswerState(machine *QuizMachine) (nextState stm.StateID, err error) {
-	// Publishes the answer to the current question to the MQTT broker.
-	machine.broker.Publish(AnswerTopic, []byte(machine.currentQuestion().Answer), true)
+// Publishes the answer to the previous question to the MQTT broker.
+// Then, if the quiz has reached its final question, ends the quiz and returns the Idle state;
+// otherwise, waits for the answer timer event before transitioning to the Question state.
+func runAnswerState(machine *QuizMachine) (nextState stm.StateID, err error) {
+	question, err := machine.currentQuestion()
+	if err != nil {
+		return 0, fmt.Errorf("quiz machine answer state failed: %w", err)
+	}
 
-	// If the quiz has reached its final question, sends the quiz end message,
-	// resets the quiz questions, and returns to the idle state.
+	machine.broker.Publish(AnswerTopic, []byte(question.Answer), true)
+
+	// If this is the final question, end the quiz and clean up the questions.
 	if len(machine.questions) >= maxQuestionCount {
 		machine.broker.Publish(QuizStatusTopic, []byte(QuizEndMessage), true)
 		machine.questions = make([]Question, 0)
 		return idleState, nil
 	}
 
-	// Sets a timer to trigger the answer timer event.
 	go stm.SetTimer(answerDuration, machine.answerTimer)
-
-	// Waits for the answer timer event.
 	<-machine.answerTimer
 
 	return questionState, nil
