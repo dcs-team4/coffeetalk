@@ -16,10 +16,8 @@ func (user *User) Listen() {
 		if err != nil {
 			if _, ok := err.(*websocket.CloseError); ok {
 				return
-			} else {
-				log.Printf("Failed to read socket message: %v\n", err)
 			}
-
+			log.Println("Failed to read socket message:", err)
 			continue
 		}
 
@@ -41,7 +39,7 @@ func (user *User) HandleMessage(rawMessage []byte) {
 
 	// Handles the message according to its type.
 	switch baseMessage.Type {
-	// Fallthrough because video offer, answer and ICE Candidate messages are all handled the same.
+	// Fallthrough because video offer, answer and ICE candidate messages are all handled the same.
 	case MsgVideoOffer:
 		fallthrough
 	case MsgVideoAnswer:
@@ -93,8 +91,8 @@ func DeserializeMsg(rawMessage []byte, pointer any, sender *User) (ok bool) {
 	return true
 }
 
-// Validates the given video exchange message. If valid, sets the message's From field to the given
-// sender's username, and returns the target's connection. Otherwise, returns ok=false.
+// Validates the given peer exchange message. If valid, sets the message's From field to the given
+// sender's username, and returns the target peer's connection. Otherwise, returns ok=false.
 func (message *PeerExchangeMessage) Validate(sender *User) (target *websocket.Conn, ok bool) {
 	targetUser, ok := users.GetByName(message.To)
 
@@ -105,6 +103,8 @@ func (message *PeerExchangeMessage) Validate(sender *User) (target *websocket.Co
 		return nil, false
 	}
 
+	sender.Lock.RLock()
+	defer sender.Lock.RUnlock()
 	message.From = sender.Name
 
 	return targetUser.Socket, true
