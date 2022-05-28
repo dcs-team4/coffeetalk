@@ -2,7 +2,7 @@
 package stm
 
 import (
-	"log"
+	"fmt"
 	"time"
 )
 
@@ -13,9 +13,9 @@ type StateMachine[Machine any] interface {
 	// Returns the configured states for this state machine.
 	States() States[Machine]
 
-	// Manages the machine's states, and executes its state functions.
+	// Manages the machine's states, and executes its state functions until an error occurs.
 	// Typically calls the RunMachine function provided by this package.
-	Run()
+	Run() error
 }
 
 // Uniquely identifies a state in a state machine.
@@ -24,8 +24,9 @@ type StateID int
 
 // A function to run when in a given state.
 // Takes a type parameter for the type of state machine to execute on.
-// Typically keeps running until some event is triggered, upon which it returns the next state.
-type StateFunc[Machine any] func(machine Machine) (nextState StateID)
+// Typically keeps running until some event is triggered, upon which it returns the next state,
+// or until an error occurs.
+type StateFunc[Machine any] func(machine Machine) (nextState StateID, err error)
 
 // A map of possible states for a state machine.
 // Takes a type parameter for the type of state machine to attach to.
@@ -42,23 +43,26 @@ type Event chan Trigger
 
 // Utility function for running a state machine.
 // Keeps running every configured state function (starting with the given startState),
-// and transitions to new states as they return.
+// and transitions to new states as they return. Keeps running until an error occurs.
 // The type parameter constraint ensures that the machine configures states for itself.
-func RunMachine[Machine StateMachine[Machine]](machine Machine, startState StateID) {
+func RunMachine[Machine StateMachine[Machine]](machine Machine, startState StateID) error {
 	currentState := startState
 
 	for {
 		// Gets the state function for the current state from the machine's state configuration.
 		currentStateFunc, ok := machine.States()[currentState]
-
-		// If state function is not configured, logs warning and breaks the loop.
 		if !ok {
-			log.Printf("Missing state machine function for StateID %v!\n", currentState)
-			break
+			return fmt.Errorf("missing state machine function for state ID %v", currentState)
 		}
 
 		// Runs the state function, and sets its returned next state as the new current state.
-		currentState = currentStateFunc(machine)
+		nextState, err := currentStateFunc(machine)
+		if err != nil {
+			return fmt.Errorf(
+				"error in state machine function for state ID %v: %w", currentState, err,
+			)
+		}
+		currentState = nextState
 	}
 }
 
