@@ -16,41 +16,29 @@ import (
 //go:embed all:tls
 var tlsFiles embed.FS
 
-// Starts an MQTT broker that listens for WebSocket and TCP connections on the given ports.
-func Start(socketPort string, tcpPort string) *mqtt.Server {
-	// Configures the broker server.
-	server := mqtt.NewServer(nil)
+// Creates an MQTT broker configured to listen for WebSocket and TCP connections on the given ports.
+func New(socketPort string, tcpPort string) *mqtt.Server {
+	broker := mqtt.NewServer(nil)
 
 	listenerConfig := configureListener()
 
-	// Listens for WebSocket connections on the given socketPort.
 	socket := listeners.NewWebsocket("socket1", ":"+socketPort)
-	err := server.AddListener(socket, listenerConfig)
+	err := broker.AddListener(socket, listenerConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Listens for TCP connections on the given tcpPort.
 	tcp := listeners.NewTCP("tcp1", ":"+tcpPort)
-	err = server.AddListener(tcp, listenerConfig)
+	err = broker.AddListener(tcp, listenerConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Logs new connections.
-	server.Events.OnConnect = func(client events.Client, packet events.Packet) {
+	broker.Events.OnConnect = func(client events.Client, packet events.Packet) {
 		log.Printf("%v connected!\n", client.ID)
 	}
 
-	// Starts the server in a new goroutine.
-	go func() {
-		err := server.Serve()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	return server
+	return broker
 }
 
 // Returns an MQTT listener config.
