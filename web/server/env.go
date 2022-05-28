@@ -36,13 +36,15 @@ func makeBaseClientEnv(envNames []string) map[string]string {
 	return env
 }
 
-// Returns a map of environment variables, using the variables from baseClientEnv, and adding
-// extra environment variables passed as arguments.
+// Returns a map of environment variables, using the variables from baseClientEnv,
+// and adding extra environment variables passed as arguments.
 func makeClientEnv(clientType string) map[string]string {
 	env := make(map[string]string)
+
 	for key, value := range baseClientEnv {
 		env[key] = value
 	}
 	env[envClientType] = clientType
+
 	return env
 }

@@ -8,17 +8,16 @@ import (
 	"github.com/dcs-team4/coffeetalk/web/server"
 )
 
-// Embeds the "templates" directory in this Go binary, for processing and serving of HTML.
+// Embeds the "templates" directory, for processing and serving HTML templates.
 //go:embed templates
 var templatesDir embed.FS
 
-// Embeds the "static" directory in this Go binary, for serving of JS and CSS files.
+// Embeds the "static" directory, for serving JS and CSS files.
 // Excludes directories starting with _, such as _types, which we do not want to serve.
 //go:embed static
 var staticDir embed.FS
 
 func main() {
-	// Gets PORT environment variable, defaulting to 3000 if not present.
 	port, ok := os.LookupEnv("PORT")
 	if !ok {
 		port = "3000"
@@ -26,11 +25,10 @@ func main() {
 
 	log.Printf("Web server listening on port %v...\n", port)
 
-	// Serves the web app from the templates and static folders, until an error occurs.
 	err := server.Serve(":"+port, staticDir, templatesDir)
-
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
+
 	log.Println("Web server closed.")
 }

@@ -3,6 +3,7 @@ package server
 import (
 	"crypto/tls"
 	"embed"
+	"fmt"
 	"net/http"
 )
 
@@ -15,17 +16,17 @@ var tlsFiles embed.FS
 func listenAndServeTLS(address string, handler http.Handler) error {
 	certFile, err := tlsFiles.ReadFile("tls/tls-cert.pem")
 	if err != nil {
-		return err
+		return fmt.Errorf("tls certificate setup failed: %w", err)
 	}
 
 	keyFile, err := tlsFiles.ReadFile("tls/tls-key.pem")
 	if err != nil {
-		return err
+		return fmt.Errorf("tls key setup failed: %w", err)
 	}
 
 	certificate, err := tls.X509KeyPair(certFile, keyFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("error configuring tls certificate: %w", err)
 	}
 
 	server := &http.Server{
