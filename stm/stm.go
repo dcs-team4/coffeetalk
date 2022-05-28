@@ -23,9 +23,8 @@ type StateMachine[Machine any] interface {
 type StateID int
 
 // A function to run when in a given state.
+// Returns when transitioning states (typically after an event triggers), or when an error occurs.
 // Takes a type parameter for the type of state machine to execute on.
-// Typically keeps running until some event is triggered, upon which it returns the next state,
-// or until an error occurs.
 type StateFunc[Machine any] func(machine Machine) (nextState StateID, err error)
 
 // A map of possible states for a state machine.
