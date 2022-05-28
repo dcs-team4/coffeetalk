@@ -22,21 +22,15 @@ func main() {
 	}
 
 	// Sets up channel to keep running the server until a cancel signal is received.
-	done := make(chan struct{}, 1)
-	cancelSignal := make(chan os.Signal, 1)
-	signal.Notify(cancelSignal, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		sig := <-cancelSignal
-		log.Println("Received cancel signal:", sig)
-		done <- struct{}{}
-	}()
+	close := make(chan struct{}, 1)
+	go handleCancelSignal(close)
 
 	// Runs MQTT broker concurrently.
 	mqttBroker := broker.New(socketPort, tcpPort)
 	go func() {
 		err := mqttBroker.Serve()
 		log.Println("MQTT broker failed:", err)
-		done <- struct{}{}
+		close <- struct{}{}
 	}()
 	log.Printf("MQTT broker listening on ports %v (WebSocket), %v (TCP)...\n", socketPort, tcpPort)
 
@@ -45,14 +39,25 @@ func main() {
 	go func() {
 		err := quizmachine.Run()
 		log.Println("Quiz state machine failed:", err)
-		done <- struct{}{}
+		close <- struct{}{}
 	}()
 	mqttBroker.Events.OnMessage = quizmachine.StartQuizHandler()
 	log.Println("Running quiz state machine...")
 
 	// Waits until server cancels/crashes.
-	<-done
+	<-close
 
 	mqttBroker.Close()
 	log.Println("Server closed.")
+}
+
+// Sends on the given listener channel when a system cancel signal is received.
+func handleCancelSignal(listener chan<- struct{}) {
+	cancelSignal := make(chan os.Signal, 1)
+	signal.Notify(cancelSignal, syscall.SIGINT, syscall.SIGTERM)
+
+	sig := <-cancelSignal
+	log.Println("Received cancel signal:", sig)
+
+	listener <- struct{}{}
 }
