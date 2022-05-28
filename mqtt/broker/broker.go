@@ -3,6 +3,7 @@ package broker
 
 import (
 	"embed"
+	"fmt"
 	"log"
 	"os"
 
@@ -17,46 +18,48 @@ import (
 var tlsFiles embed.FS
 
 // Creates an MQTT broker configured to listen for WebSocket and TCP connections on the given ports.
-func New(socketPort string, tcpPort string) *mqtt.Server {
+// Returns an error if setup failed.
+func New(socketPort string, tcpPort string) (*mqtt.Server, error) {
 	broker := mqtt.NewServer(nil)
 
-	listenerConfig := configureListener()
+	listenerConfig, err := configureListener()
+	if err != nil {
+		return nil, err
+	}
 
 	socket := listeners.NewWebsocket("socket1", ":"+socketPort)
-	err := broker.AddListener(socket, listenerConfig)
+	err = broker.AddListener(socket, listenerConfig)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("websocket listener setup failed: %w", err)
 	}
 
 	tcp := listeners.NewTCP("tcp1", ":"+tcpPort)
 	err = broker.AddListener(tcp, listenerConfig)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("tcp listener setup failed: %w", err)
 	}
 
 	broker.Events.OnConnect = func(client events.Client, packet events.Packet) {
-		log.Printf("%v connected!\n", client.ID)
+		log.Printf("%v connected.\n", client.ID)
 	}
 
-	return broker
+	return broker, nil
 }
 
-// Returns an MQTT listener config.
+// Returns an MQTT listener config, or an error if config setup failed.
 // If in a production environment, configures TLS for the listener with the embedded TLS files.
-func configureListener() *listeners.Config {
+func configureListener() (*listeners.Config, error) {
 	config := &listeners.Config{Auth: new(auth.Allow)}
 
 	if os.Getenv("ENV") == "production" {
 		tlsCertificate, err := tlsFiles.ReadFile("tls/tls-cert.pem")
 		if err != nil {
-			log.Printf("TLS certificate setup failed: %v\n", err)
-			return config
+			return nil, fmt.Errorf("tls certificate setup failed: %w", err)
 		}
 
 		tlsKey, err := tlsFiles.ReadFile("tls/tls-key.pem")
 		if err != nil {
-			log.Printf("TLS key setup failed: %v\n", err)
-			return config
+			return nil, fmt.Errorf("tls key setup failed: %w", err)
 		}
 
 		config.TLS = &listeners.TLS{
@@ -65,5 +68,5 @@ func configureListener() *listeners.Config {
 		}
 	}
 
-	return config
+	return config, nil
 }
