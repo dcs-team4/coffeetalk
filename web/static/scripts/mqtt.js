@@ -28,25 +28,24 @@ const mqttMessages = {
  * Undefined if uninitialized.
  * @type {Paho.MQTT.Client | undefined}
  */
-let mqtt_client;
+let mqttClient;
 
 /** Connects to the MQTT broker and sets up message listeners. */
 export function connectMQTT() {
-  // Creates MQTT client and registers event handlers.
-  mqtt_client = new Paho.MQTT.Client(env.MQTT_HOST, parseInt(env.MQTT_PORT), "");
-  mqtt_client.onMessageArrived = handleMQTTMessage;
-  mqtt_client.onConnectionLost = ({ errorCode, errorMessage }) => {
+  // Passes "" as MQTT client ID, as that tells the server to generate a unique ID for us.
+  mqttClient = new Paho.MQTT.Client(env.MQTT_HOST, parseInt(env.MQTT_PORT), "");
+  mqttClient.onMessageArrived = handleMQTTMessage;
+  mqttClient.onConnectionLost = ({ errorCode, errorMessage }) => {
     // Error code 0 means no error.
     if (errorCode !== 0) {
       console.log("Connection to MQTT broker lost:", errorMessage);
     }
   };
 
-  // Connects to the broker, using SSL if in production.
-  mqtt_client.connect({
+  mqttClient.connect({
     onSuccess: () => {
       console.log("Successfully connected to MQTT broker.");
-      mqtt_client?.subscribe(`${MQTT_TOPIC_PREFIX}/#`);
+      mqttClient?.subscribe(`${MQTT_TOPIC_PREFIX}/#`);
     },
     onFailure: ({ errorMessage }) => {
       console.log("Failed to connect to MQTT broker:", errorMessage);
@@ -104,20 +103,20 @@ function handleMQTTMessage(message) {
 
 /** Starts a new quiz session by publishing a start quiz message to the MQTT broker. */
 export function startQuiz() {
-  if (!mqtt_client) {
+  if (!mqttClient) {
     console.log("Failed to start quiz: MQTT client uninitialized.");
     return;
   }
 
   const message = new Paho.MQTT.Message(mqttMessages.START);
   message.destinationName = mqttTopics.STATUS;
-  mqtt_client.send(message);
+  mqttClient.send(message);
 }
 
 /** Disconnects from the MQTT broker. */
 export function disconnectMQTT() {
-  if (mqtt_client?.isConnected()) {
-    mqtt_client.disconnect();
+  if (mqttClient?.isConnected()) {
+    mqttClient.disconnect();
     console.log("Disconnected from MQTT broker.");
   }
 }
