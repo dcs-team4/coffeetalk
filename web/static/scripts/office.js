@@ -49,13 +49,13 @@ export function detectMotion() {
       // Checks for motion in the past two minutes, and joins/leaves the call accordingly.
       if (secondsSinceLastMotion >= 120) {
         if (inSession) {
+          console.log("Motion timed out, leaving stream.");
           leaveSession();
-          console.log("Motion timed out, left call.");
         }
       } else {
         if (!inSession && socketOpen) {
+          console.log("Motion detected, joining stream.");
           joinSession();
-          console.log("Motion detected, joined call.");
         }
       }
     },
