@@ -141,7 +141,7 @@ func (user *User) HandlePeerLeft() {
 	defer users.Lock.RUnlock()
 
 	for _, otherUser := range users.Map {
-		if otherUser.Name == user.Name {
+		if user.ID == otherUser.ID {
 			continue
 		}
 
