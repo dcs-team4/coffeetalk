@@ -1,5 +1,4 @@
 import { env } from "./env.js";
-import { getUsername } from "./user.js";
 import { DOM } from "./dom.js";
 
 /** Shared prefix for MQTT quiz topics. */
@@ -33,14 +32,8 @@ let mqtt_client;
 
 /** Connects to the MQTT broker and sets up message listeners. */
 export function connectMQTT() {
-  const user = getUsername();
-  if (!user.ok) {
-    console.log("MQTT connection failed: Invalid username.");
-    return;
-  }
-
   // Creates MQTT client and registers event handlers.
-  mqtt_client = new Paho.MQTT.Client(env.MQTT_HOST, parseInt(env.MQTT_PORT), user.name);
+  mqtt_client = new Paho.MQTT.Client(env.MQTT_HOST, parseInt(env.MQTT_PORT), "");
   mqtt_client.onMessageArrived = handleMQTTMessage;
   mqtt_client.onConnectionLost = ({ errorCode, errorMessage }) => {
     // Error code 0 means no error.
