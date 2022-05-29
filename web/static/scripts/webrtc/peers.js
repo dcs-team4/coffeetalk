@@ -14,7 +14,7 @@ const peers = {};
  */
 function getPeer(username) {
   if (!peers.hasOwnProperty(username)) {
-    console.log(`Unrecognized peer: ${username}`);
+    console.log("Unrecognized peer:", username);
     return { ok: false };
   }
 
@@ -59,7 +59,7 @@ function sendLocalStream(peerConnection) {
  * and starts sending this user's stream to them.
  * @param {string} peerName
  */
-export async function sendPeerOffer(peerName) {
+export async function handleNewPeer(peerName) {
   const peer = createPeerConnection(peerName);
   sendLocalStream(peer.connection);
 }
@@ -82,7 +82,7 @@ export async function receivePeerOffer(senderName, sessionDescription) {
     const answer = await peer.connection.createAnswer();
     await peer.connection.setLocalDescription(answer);
   } catch (error) {
-    console.log("Error in establishing WebRTC connection:", error);
+    console.log("Failed to establish WebRTC connection:", error);
     return;
   }
 
@@ -121,7 +121,7 @@ export async function receiveICECandidate(senderName, iceCandidate) {
   try {
     await peer.connection.addIceCandidate(candidate);
   } catch (error) {
-    console.log(error);
+    console.log("Failed to add received ICE candidate:", error);
   }
 }
 
@@ -133,25 +133,23 @@ export function closePeerConnection(peerName) {
   const peer = getPeer(peerName);
   if (!peer.ok) return;
 
-  // Stops the video stream.
   if (peer.video) {
     peer.video.pause();
-    for (const track of /** @type {MediaStream} */ (peer.video.srcObject)?.getTracks()) {
+
+    const videoSrc = /** @type {MediaStream | null} */ (peer.video.srcObject);
+    for (const track of videoSrc?.getTracks() ?? []) {
       track.stop();
     }
   }
 
-  // Removes video from the DOM.
   if (peer.videoContainer) {
     DOM.videos().removeChild(peer.videoContainer);
   }
 
-  // Stops peer-to-peer communication.
   for (const transceiver of peer.connection.getTransceivers()) {
     transceiver.stop();
   }
 
-  // Closes connection and clears peer.
   peer.connection.close();
   delete peers[peerName];
 }
@@ -179,8 +177,8 @@ export function createPeerConnection(peerName) {
     ],
   });
   const peer = { connection };
+  peers[peerName] = peer;
 
-  // Registers event handlers.
   connection.addEventListener("track", (event) => {
     handleTrack(event, peer, peerName);
   });
@@ -196,9 +194,6 @@ export function createPeerConnection(peerName) {
   connection.addEventListener("signalingstatechange", () => {
     handleSignalingStateChange(peer, peerName);
   });
-
-  // Adds the peer to the peers state.
-  peers[peerName] = peer;
 
   return peer;
 }
@@ -226,7 +221,7 @@ async function handleNegotiationNeeded(peer, peerName) {
     const offer = await peer.connection.createOffer();
     await peer.connection.setLocalDescription(offer);
   } catch (error) {
-    console.log("Error in ICE negotiation:", error);
+    console.log("Failed to create peer connection offer:", error);
     return;
   }
 

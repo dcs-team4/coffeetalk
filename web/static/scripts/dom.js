@@ -16,10 +16,11 @@ export const DOM = Object.freeze({
   quizBar: () => /** @type {HTMLElement} */ (document.getElementById("quiz-bar")),
   startQuizButton: () => /** @type {HTMLElement} */ (document.getElementById("start-quiz")),
   quizTitle: () => /** @type {HTMLElement} */ (document.getElementById("quiz-title")),
-  quizQuestionTitle: () =>
-    /** @type {HTMLElement} */ (document.getElementById("quiz-question-title")),
+  quizQuestionContainer: () =>
+    /** @type {HTMLElement} */ (document.getElementById("quiz-question-container")),
   quizQuestion: () => /** @type {HTMLElement} */ (document.getElementById("quiz-question")),
-  quizAnswerTitle: () => /** @type {HTMLElement} */ (document.getElementById("quiz-answer-title")),
+  quizAnswerContainer: () =>
+    /** @type {HTMLElement} */ (document.getElementById("quiz-answer-container")),
   quizAnswer: () => /** @type {HTMLElement} */ (document.getElementById("quiz-answer")),
   leaveStreamBar: () => /** @type {?HTMLElement} */ (document.getElementById("leave-stream-bar")),
   leaveStreamButton: () => /** @type {?HTMLElement} */ (document.getElementById("leave-stream")),
@@ -28,10 +29,8 @@ export const DOM = Object.freeze({
   localVideoName: () => /** @type {HTMLElement} */ (document.getElementById("local-video-name")),
 });
 
-registerListeners();
-
 /** Initializes event listeners on the appropriate DOM objects. */
-function registerListeners() {
+export function registerListeners() {
   DOM.usernameInput()?.addEventListener("change", (event) => {
     const name = /** @type {HTMLInputElement} */ (event.target).value;
     setUsername(name);

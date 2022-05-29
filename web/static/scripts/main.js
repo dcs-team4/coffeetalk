@@ -1,11 +1,14 @@
 import { env } from "./env.js";
-import "./dom.js";
 import "./user.js";
 import "./session.js";
 import "./mqtt.js";
+import { registerListeners } from "./dom.js";
 import { connectWebRTCSocket } from "./webrtc/socket.js";
 import { streamLocalVideo } from "./webrtc/peers.js";
 import { initializeOffice, detectMotion } from "./office.js";
+
+// Registers event listeners on DOM objects.
+registerListeners();
 
 // Initializes socket connection with WebRTC signaling server.
 connectWebRTCSocket();

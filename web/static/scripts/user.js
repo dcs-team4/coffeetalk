@@ -1,8 +1,7 @@
 import { DOM } from "./dom.js";
 
 /**
- * Username used for stream ID and message passing.
- * Undefined until user logs in.
+ * Username used for stream ID and message passing. Undefined until user logs in.
  * @type {string | undefined}
  */
 let username;
@@ -28,9 +27,8 @@ export function setUsername(name) {
 }
 
 /**
- * Logs the user in with their selected username.
+ * Logs the user in with their selected username, and returns it.
  * If username is not selected, displays error message and returns `ok=false`.
- * Otherwise, returns an object with the user's `name`.
  * @returns {{ name: string, ok: true } | { ok: false }}
  */
 export function login() {

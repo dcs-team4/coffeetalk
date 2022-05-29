@@ -45,7 +45,7 @@ export function connectMQTT() {
   mqtt_client.onConnectionLost = ({ errorCode, errorMessage }) => {
     // Error code 0 means no error.
     if (errorCode !== 0) {
-      console.log(`Connection to MQTT broker lost:\n${errorMessage}`);
+      console.log("Connection to MQTT broker lost:", errorMessage);
     }
   };
 
@@ -56,14 +56,14 @@ export function connectMQTT() {
       mqtt_client?.subscribe(`${MQTT_TOPIC_PREFIX}/#`);
     },
     onFailure: ({ errorMessage }) => {
-      console.log(`Failed to connect to MQTT broker:\n${errorMessage}`);
+      console.log("Failed to connect to MQTT broker:", errorMessage);
     },
     useSSL: env.ENV === "production",
   });
 }
 
 /**
- * Handles the given MQTT message.
+ * Handles the given MQTT message according to its topic.
  * @param {Paho.MQTT.Message} message
  */
 function handleMQTTMessage(message) {
@@ -73,15 +73,17 @@ function handleMQTTMessage(message) {
   });
 
   switch (message.destinationName) {
-    // Initializes quiz view on receiving question rather than receiving start message,
-    // to allow users to join after the start message.
     case mqttTopics.QUESTIONS:
       DOM.quizQuestion().innerText = message.payloadString;
       DOM.quizAnswer().innerText = "";
+
+      // Initializes quiz view on receiving question rather than receiving start message,
+      // to allow users to join after the start message.
       DOM.startQuizButton().classList.add("hide");
       DOM.quizTitle().classList.remove("hide");
-      DOM.quizQuestionTitle().classList.remove("hide");
-      DOM.quizAnswerTitle().classList.remove("hide");
+      DOM.quizQuestionContainer().classList.remove("hide");
+      DOM.quizAnswerContainer().classList.remove("hide");
+
       break;
     case mqttTopics.ANSWERS:
       DOM.quizAnswer().innerText = message.payloadString;
@@ -92,25 +94,25 @@ function handleMQTTMessage(message) {
           break;
         case mqttMessages.END:
           DOM.quizTitle().classList.add("hide");
-          DOM.quizQuestionTitle().classList.add("hide");
+          DOM.quizQuestionContainer().classList.add("hide");
           DOM.quizQuestion().innerText = "";
-          DOM.quizAnswerTitle().classList.add("hide");
+          DOM.quizAnswerContainer().classList.add("hide");
           DOM.quizAnswer().innerText = "";
           DOM.startQuizButton().classList.remove("hide");
           break;
         default:
-          console.log(`Unrecognized MQTT message: ${message.payloadString}`);
+          console.log("Unrecognized MQTT status message:", message.payloadString);
       }
       break;
     default:
-      console.log(`Unrecognized MQTT topic: ${message.destinationName}`);
+      console.log("Unrecognized MQTT topic:", message.destinationName);
   }
 }
 
 /** Starts a new quiz session by publishing a start quiz message to the MQTT broker. */
 export function startQuiz() {
   if (!mqtt_client) {
-    console.log("Start quiz failed: MQTT client uninitialized.");
+    console.log("Failed to start quiz: MQTT client uninitialized.");
     return;
   }
 

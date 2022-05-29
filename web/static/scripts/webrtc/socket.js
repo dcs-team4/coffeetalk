@@ -1,7 +1,7 @@
 import { env } from "../env.js";
 import { inSession, leaveSession } from "../session.js";
 import {
-  sendPeerOffer,
+  handleNewPeer,
   receivePeerOffer,
   receivePeerAnswer,
   receiveICECandidate,
@@ -101,7 +101,7 @@ function handleMessage(event) {
       break;
     case messages.PEER_JOINED:
       incrementPeerCount();
-      if (inSession) sendPeerOffer(message.username);
+      if (inSession) handleNewPeer(message.username);
       break;
     case messages.PEER_LEFT:
       decrementPeerCount();
@@ -111,7 +111,7 @@ function handleMessage(event) {
       setPeerCount(message.peerCount);
       break;
     case messages.ERROR:
-      console.log(`Error from WebRTC server:\n${message.errorMessage}`);
+      console.log("Error from WebRTC server:", message.errorMessage);
       break;
     default: {
       console.log("WebRTC message not recognized.");

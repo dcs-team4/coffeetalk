@@ -31,7 +31,9 @@ declare namespace messages {
       }
   );
 
-  type ReceivedPeerExchange = PeerExchange & { from: string };
+  type ReceivedPeerExchange = PeerExchange & {
+    from: string;
+  };
 
   type JoinPeers = {
     type: MessageTypes["JOIN_PEERS"];

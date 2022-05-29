@@ -34,7 +34,6 @@ export function detectMotion() {
     debug: false,
     sourceDimensions: { w: 130, h: 100 },
     onFrame: (matrix) => {
-      // Gets the current time.
       const now = new Date();
 
       // Checks for motion in the webcam.

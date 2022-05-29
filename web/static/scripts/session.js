@@ -10,7 +10,7 @@ export let inSession = false;
 /**
  * If not already in the session:
  * - Logs in with the user's provided username.
- * - Alerts the WebRTC server that we are ready to join the stream.
+ * - Signals to the WebRTC server that we are ready to set up peer connections.
  * - Connects to the MQTT broker for quiz sessions.
  * - Displays the stream.
  */
@@ -28,10 +28,9 @@ export function joinSession() {
 }
 
 /**
- * - Closes peer-to-peer connections.
- * - Returns to the login view.
- * - Alerts the WebRTC signaling server that we want to leave the stream.
+ * - Closes peer-to-peer connections, and alerts the WebRTC server that we are leaving.
  * - Disconnects from the MQTT broker.
+ * - Returns to the login view.
  */
 export function leaveSession() {
   closePeerConnections();
