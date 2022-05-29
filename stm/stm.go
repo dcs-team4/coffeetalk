@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// A state machine is a type with a configured set of states with corresponding state functions,
+// A state machine is a type with a configured set of states and corresponding state functions,
 // and a method for running the machine.
 // The type parameter here is to avoid self-reference, but typically points back to the implementer.
 type StateMachine[Machine any] interface {
@@ -25,7 +25,7 @@ type StateID int
 // A function to run when in a given state.
 // Returns when transitioning states (typically after an event triggers), or when an error occurs.
 // Takes a type parameter for the type of state machine to execute on.
-type StateFunc[Machine any] func(machine Machine) (nextState StateID, err error)
+type StateFunc[Machine any] func(Machine) (nextState StateID, err error)
 
 // A map of possible states for a state machine.
 // Takes a type parameter for the type of state machine to attach to.
