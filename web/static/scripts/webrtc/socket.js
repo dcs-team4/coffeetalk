@@ -1,5 +1,5 @@
 import { env } from "../env.js";
-import { inSession, leaveSession } from "../session.js";
+import { inStream, leaveStream } from "../stream.js";
 import {
   handleNewPeer,
   receivePeerOffer,
@@ -101,7 +101,7 @@ function handleMessage(event) {
       break;
     case messages.PEER_JOINED:
       incrementPeerCount();
-      if (inSession) handleNewPeer(message.username);
+      if (inStream) handleNewPeer(message.username);
       break;
     case messages.PEER_LEFT:
       decrementPeerCount();
@@ -122,7 +122,7 @@ function handleMessage(event) {
 /** On socket connection close: leaves the stream, and reloads the app. */
 function handleClose() {
   socketOpen = false;
-  leaveSession();
+  leaveStream();
   displayError("Connection lost. Reloading...");
   setTimeout(() => location.reload(), 5000);
 }

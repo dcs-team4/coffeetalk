@@ -1,6 +1,6 @@
 import { setUsername } from "./user.js";
 import { DOM } from "./dom.js";
-import { inSession, joinSession, leaveSession } from "./session.js";
+import { inStream, joinStream, leaveStream } from "./stream.js";
 import { socketOpen } from "./webrtc/socket.js";
 
 /** Initializes the office client with a name for the stream. */
@@ -48,14 +48,14 @@ export function detectMotion() {
 
       // Checks for motion in the past two minutes, and joins/leaves the call accordingly.
       if (secondsSinceLastMotion >= 120) {
-        if (inSession) {
+        if (inStream) {
           console.log("Motion timed out, leaving stream.");
-          leaveSession();
+          leaveStream();
         }
       } else {
-        if (!inSession && socketOpen) {
+        if (!inStream && socketOpen) {
           console.log("Motion detected, joining stream.");
-          joinSession();
+          joinStream();
         }
       }
     },

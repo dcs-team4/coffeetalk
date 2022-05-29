@@ -4,17 +4,17 @@ import { login } from "./user.js";
 import { closePeerConnections } from "./webrtc/peers.js";
 import { sendWebRTCMessage, messages } from "./webrtc/socket.js";
 
-/** Whether the user has joined the CoffeeTalk session. */
-export let inSession = false;
+/** Whether the user has joined the CoffeeTalk video stream. */
+export let inStream = false;
 
 /**
- * If not already in the session:
+ * If not already in the stream:
  * - Logs in with the user's provided username.
  * - Signals to the WebRTC server that we are ready to set up peer connections.
  * - Connects to the MQTT broker for quiz sessions.
  * - Displays the stream.
  */
-export function joinSession() {
+export function joinStream() {
   const user = login();
   if (!user.ok) return;
 
@@ -23,8 +23,8 @@ export function joinSession() {
   displayStream();
   incrementPeerCount();
 
-  inSession = true;
-  console.log("Joined session.");
+  inStream = true;
+  console.log("Joined stream.");
 }
 
 /**
@@ -32,13 +32,13 @@ export function joinSession() {
  * - Disconnects from the MQTT broker.
  * - Returns to the login view.
  */
-export function leaveSession() {
+export function leaveStream() {
   closePeerConnections();
   sendWebRTCMessage({ type: messages.LEAVE_PEERS });
   disconnectMQTT();
   displayLogin();
   decrementPeerCount();
 
-  inSession = false;
-  console.log("Left session.");
+  inStream = false;
+  console.log("Left stream.");
 }

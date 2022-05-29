@@ -1,6 +1,6 @@
 import { setUsername } from "./user.js";
 import { startQuiz } from "./mqtt.js";
-import { joinSession, leaveSession } from "./session.js";
+import { joinStream, leaveStream } from "./stream.js";
 
 /**
  * Utility object wrapping functions for fetching DOM elements.
@@ -36,8 +36,8 @@ export function registerListeners() {
     setUsername(name);
   });
 
-  DOM.joinCallButton()?.addEventListener("click", joinSession);
-  DOM.leaveStreamButton()?.addEventListener("click", leaveSession);
+  DOM.joinCallButton()?.addEventListener("click", joinStream);
+  DOM.leaveStreamButton()?.addEventListener("click", leaveStream);
   DOM.startQuizButton().addEventListener("click", startQuiz);
 }
 
