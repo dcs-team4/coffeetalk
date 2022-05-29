@@ -51,7 +51,7 @@ func NewUser(socket *websocket.Conn) (user *User, userID int) {
 			user.HandlePeerLeft()
 		}
 
-		log.Printf("Socket with client ID %v closed.\n", userID)
+		log.Printf("Socket with user ID %v closed.\n", userID)
 		return nil
 	})
 
