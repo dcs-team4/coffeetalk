@@ -22,6 +22,7 @@ type Users struct {
 
 // A user connected to the signaling server.
 type User struct {
+	ID     int
 	Name   string
 	Socket *websocket.Conn
 	Lock   *sync.RWMutex
@@ -63,6 +64,7 @@ func (user *User) Register() (userID int) {
 	defer users.Lock.Unlock()
 
 	userID = len(users.Map)
+	user.ID = userID
 	users.Map[userID] = user
 	return userID
 }
@@ -99,11 +101,11 @@ func (user *User) JoinPeers(username string) error {
 	}
 
 	for _, otherUser := range users.Map {
-		if otherUser.Name == username {
+		if user.ID == otherUser.ID {
 			continue
 		}
 
-		otherUser.Socket.WriteJSON(PeerStatusMessage{Message{MsgPeerJoined}, username})
+		otherUser.Socket.WriteJSON(PeerJoinedMessage{Message{MsgPeerJoined}, user.ID, username})
 	}
 
 	return nil
@@ -113,15 +115,6 @@ func (user *User) JoinPeers(username string) error {
 func (user *User) SetName(username string) error {
 	if username == "" {
 		return errors.New("username cannot be blank")
-	}
-
-	users.Lock.RLock()
-	defer users.Lock.RUnlock()
-
-	for _, user := range users.Map {
-		if user.Name == username {
-			return errors.New("username already taken")
-		}
 	}
 
 	user.Lock.Lock()
@@ -152,7 +145,7 @@ func (user *User) HandlePeerLeft() {
 			continue
 		}
 
-		otherUser.Socket.WriteJSON(PeerStatusMessage{Message{MsgPeerLeft}, user.Name})
+		otherUser.Socket.WriteJSON(PeerLeftMessage{Message{MsgPeerLeft}, user.ID})
 	}
 }
 
@@ -165,24 +158,10 @@ func removeUser(userID int) {
 }
 
 // Returns the user of the given userID from the users map, or ok=false if not found.
-func (users *Users) GetByID(userID int) (user *User, ok bool) {
+func (users *Users) Get(userID int) (user *User, ok bool) {
 	users.Lock.RLock()
 	defer users.Lock.RUnlock()
 
 	user, ok = users.Map[userID]
 	return user, ok
-}
-
-// Returns the user of the given username from the users map, or ok=false if not found.
-func (users *Users) GetByName(username string) (user *User, ok bool) {
-	users.Lock.RLock()
-	defer users.Lock.RUnlock()
-
-	for _, user := range users.Map {
-		if user.Name == username {
-			return user, true
-		}
-	}
-
-	return nil, false
 }

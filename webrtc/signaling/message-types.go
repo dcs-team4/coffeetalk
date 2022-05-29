@@ -15,20 +15,15 @@ const (
 
 // Base struct to embed in all message types.
 type Message struct {
-	// The kind of message that is sent.
-	// Messages that share the same type should always have the same structure.
 	Type string `json:"type"`
 }
 
 // Message sent between two clients when initiating a peer-to-peer connection between each other.
 type PeerExchangeMessage struct {
-	Message // Type: MsgPeerOffer/MsgPeerAnswer/MsgICECandidate
-
-	// Username of sender.
-	From string `json:"from"`
-
-	// Username of receiving peer.
-	To string `json:"to"`
+	Message           // Type: MsgPeerOffer/MsgPeerAnswer/MsgICECandidate
+	ReceiverID int    `json:"receiverId"`
+	SenderID   int    `json:"senderId"`
+	SenderName string `json:"senderName"`
 
 	// WebRTC data for setting up peer-to-peer connection. Format depends on message type.
 	//
@@ -42,26 +37,39 @@ type PeerExchangeMessage struct {
 	Data any `json:"data"`
 }
 
-// Message for signaling changes in a user's peer status: when a user wants to join the peer-to-peer
-// stream, or to signal to other peers that a peer has joined or left.
-type PeerStatusMessage struct {
-	Message // Type: MsgJoinStream/MsgPeerJoined/MsgPeerLeft
+// Message sent by client when they want to join the peer-to-peer stream.
+type JoinPeersMessage struct {
+	Message        // Type: MsgJoinPeers
+	Name    string `json:"name"` // The name that the client wants to use in the stream.
+}
 
-	// Username of the peer affected by the message.
-	Username string `json:"username"`
+// Message sent by client when they want to leave the peer-to-peer stream.
+// Identical to base Message; included here for documentation purposes.
+type LeavePeersMessage struct {
+	Message // Type: MsgLeavePeers
+}
+
+// Message sent by server to notify users that a new peer has joined the stream.
+type PeerJoinedMessage struct {
+	Message        // Type: MsgPeerJoined/MsgPeerLeft
+	ID      int    `json:"id"`
+	Name    string `json:"name"`
+}
+
+// Message sent by the server to notify users of a peer leaving.
+type PeerLeftMessage struct {
+	Message     // Type: MsgPeerLeft
+	ID      int `json:"id"`
 }
 
 // Message sent when a user successfully establishes a socket connection to the server.
 type ConnectionSuccessMessage struct {
-	Message // Type: MsgConnectionSuccess
-
-	// Number of active peers in the stream.
-	PeerCount int `json:"peerCount"`
+	Message       // Type: MsgConnectionSuccess
+	PeerCount int `json:"peerCount"` // Number of active peers in the stream.
 }
 
 // Message sent from server to client when a received message causes an error.
 type ErrorMessage struct {
-	Message // Type: MsgError
-
+	Message             // Type: MsgError
 	ErrorMessage string `json:"errorMessage"`
 }

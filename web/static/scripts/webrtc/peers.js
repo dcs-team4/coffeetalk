@@ -2,23 +2,25 @@ import { sendWebRTCMessage, messages } from "./socket.js";
 import { DOM, createPeerVideoElement } from "../dom.js";
 
 /**
- * State of this user's current peer connections, mapping usernames to peers.
- * @type {{ [username: string]: types.Peer }}
+ * State of this user's current peer connections, mapping user IDs to peers.
+ * @type {Map<number, types.Peer>}
  */
-const peers = {};
+const peers = new Map();
 
 /**
  * Tries to get a peer of the given username.
- * @param {string} username
+ * @param {number} id
  * @returns {(types.Peer & { ok: true }) | { ok: false }}
  */
-function getPeer(username) {
-  if (!peers.hasOwnProperty(username)) {
-    console.log("Unrecognized peer:", username);
+function getPeer(id) {
+  const peer = peers.get(id);
+
+  if (!peer) {
+    console.log("Unrecognized peer ID:", id);
     return { ok: false };
   }
 
-  return { ...peers[username], ok: true };
+  return { ...peer, ok: true };
 }
 
 /**
@@ -55,21 +57,23 @@ function sendLocalStream(peerConnection) {
 }
 
 /**
- * Creates a peer connection with a peer of the given name,
+ * Creates a peer connection with a peer of the given ID and name,
  * and starts sending this user's stream to them.
- * @param {string} peerName
+ * @param {number} peerID, @param {string} peerName
  */
-export async function handleNewPeer(peerName) {
-  const peer = createPeerConnection(peerName);
+export async function handleNewPeer(peerID, peerName) {
+  const peer = createPeerConnection(peerID, peerName);
   sendLocalStream(peer.connection);
 }
 
 /**
  * Handles a received WebRTC connection offer from a peer.
- * @param {string} senderName, @param {RTCSessionDescriptionInit} sessionDescription
+ * @param {number} senderId
+ * @param {string} senderName
+ * @param {RTCSessionDescriptionInit} sessionDescription
  */
-export async function receivePeerOffer(senderName, sessionDescription) {
-  const peer = createPeerConnection(senderName);
+export async function receivePeerOffer(senderId, senderName, sessionDescription) {
+  const peer = createPeerConnection(senderId, senderName);
 
   // Configures the WebRTC session.
   const session = new RTCSessionDescription(sessionDescription);
@@ -89,7 +93,7 @@ export async function receivePeerOffer(senderName, sessionDescription) {
   if (peer.connection.localDescription) {
     sendWebRTCMessage({
       type: messages.PEER_ANSWER,
-      to: senderName,
+      receiverId: senderId,
       data: peer.connection.localDescription,
     });
   }
@@ -97,10 +101,10 @@ export async function receivePeerOffer(senderName, sessionDescription) {
 
 /**
  * Handles a received answer from a peer to a previously sent WebRTC connection offer.
- * @param {string} senderName, @param {RTCSessionDescriptionInit} sessionDescription
+ * @param {number} senderId, @param {RTCSessionDescriptionInit} sessionDescription
  */
-export async function receivePeerAnswer(senderName, sessionDescription) {
-  const peer = getPeer(senderName);
+export async function receivePeerAnswer(senderId, sessionDescription) {
+  const peer = getPeer(senderId);
   if (!peer.ok) return;
 
   // Finalizes peer connection configuration.
@@ -110,10 +114,10 @@ export async function receivePeerAnswer(senderName, sessionDescription) {
 
 /**
  * Handles ICE (Interactive Connectivity Establishment) candidate for setting up WebRTC connection.
- * @param {string} senderName, @param {RTCIceCandidateInit} iceCandidate
+ * @param {number} senderId, @param {RTCIceCandidateInit} iceCandidate
  */
-export async function receiveICECandidate(senderName, iceCandidate) {
-  const peer = getPeer(senderName);
+export async function receiveICECandidate(senderId, iceCandidate) {
+  const peer = getPeer(senderId);
   if (!peer.ok) return;
 
   const candidate = new RTCIceCandidate(iceCandidate);
@@ -127,10 +131,10 @@ export async function receiveICECandidate(senderName, iceCandidate) {
 
 /**
  * Closes peer connection with the given peer, removing their video and updating the peers state.
- * @param {string} peerName
+ * @param {number} peerId
  */
-export function closePeerConnection(peerName) {
-  const peer = getPeer(peerName);
+export function closePeerConnection(peerId) {
+  const peer = getPeer(peerId);
   if (!peer.ok) return;
 
   if (peer.video) {
@@ -151,22 +155,22 @@ export function closePeerConnection(peerName) {
   }
 
   peer.connection.close();
-  delete peers[peerName];
+  peers.delete(peerId);
 }
 
 /** Closes every peer connection. */
 export function closePeerConnections() {
-  for (const peerName in peers) {
-    closePeerConnection(peerName);
+  for (const peerId of peers.keys()) {
+    closePeerConnection(peerId);
   }
 }
 
 /**
  * Intitializes a peer connection with the given peer name, and returns the peer.
- * @param {string} peerName
+ * @param {number} peerId, @param {string} peerName
  * @returns {types.Peer}
  */
-export function createPeerConnection(peerName) {
+export function createPeerConnection(peerId, peerName) {
   // Initializes the peer connection with a STUN service (Session Traversal Utilities for NAT).
   const connection = new RTCPeerConnection({
     iceServers: [
@@ -176,23 +180,23 @@ export function createPeerConnection(peerName) {
       },
     ],
   });
-  const peer = { connection };
-  peers[peerName] = peer;
+  const peer = { name: peerName, connection };
+  peers.set(peerId, peer);
 
   connection.addEventListener("track", (event) => {
     handleTrack(event, peer, peerName);
   });
   connection.addEventListener("negotiationneeded", () => {
-    handleNegotiationNeeded(peer, peerName);
+    handleNegotiationNeeded(peer, peerId);
   });
   connection.addEventListener("icecandidate", (event) => {
-    handleICECandidate(event, peerName);
+    handleICECandidate(event, peerId);
   });
   connection.addEventListener("iceconnectionstatechange", () => {
-    handleICEConnectionStateChange(peer, peerName);
+    handleICEConnectionStateChange(peer, peerId);
   });
   connection.addEventListener("signalingstatechange", () => {
-    handleSignalingStateChange(peer, peerName);
+    handleSignalingStateChange(peer, peerId);
   });
 
   return peer;
@@ -214,9 +218,9 @@ function handleTrack(event, peer, peerName) {
 
 /**
  * Handles event for performing ICE negotiation.
- * @param {types.Peer} peer, @param {string} peerName
+ * @param {types.Peer} peer, @param {number} peerId
  */
-async function handleNegotiationNeeded(peer, peerName) {
+async function handleNegotiationNeeded(peer, peerId) {
   try {
     const offer = await peer.connection.createOffer();
     await peer.connection.setLocalDescription(offer);
@@ -228,7 +232,7 @@ async function handleNegotiationNeeded(peer, peerName) {
   if (peer.connection.localDescription) {
     sendWebRTCMessage({
       type: messages.PEER_OFFER,
-      to: peerName,
+      receiverId: peerId,
       data: peer.connection.localDescription,
     });
   }
@@ -236,33 +240,33 @@ async function handleNegotiationNeeded(peer, peerName) {
 
 /**
  * Handles incoming candidates for ICE (Interactive Connectivity Establishment protocol).
- * @param {RTCPeerConnectionIceEvent} event, @param {string} peerName
+ * @param {RTCPeerConnectionIceEvent} event, @param {number} peerId
  */
-function handleICECandidate(event, peerName) {
+function handleICECandidate(event, peerId) {
   if (event.candidate) {
-    sendWebRTCMessage({ type: messages.ICE_CANDIDATE, to: peerName, data: event.candidate });
+    sendWebRTCMessage({ type: messages.ICE_CANDIDATE, receiverId: peerId, data: event.candidate });
   }
 }
 
 /**
  * Handles changes in the ICE connection state with the given peer.
- * @param {types.Peer} peer, @param {string} peerName
+ * @param {types.Peer} peer, @param {number} peerId
  */
-function handleICEConnectionStateChange(peer, peerName) {
+function handleICEConnectionStateChange(peer, peerId) {
   switch (peer.connection.iceConnectionState) {
     case "closed":
     case "failed":
-      closePeerConnection(peerName);
+      closePeerConnection(peerId);
       break;
   }
 }
 
 /**
  * Handles changes in the signaling state with the given peer.
- * @param {types.Peer} peer, @param {string} peerName
+ * @param {types.Peer} peer, @param {number} peerId
  */
-function handleSignalingStateChange(peer, peerName) {
+function handleSignalingStateChange(peer, peerId) {
   if (peer.connection.signalingState === "closed") {
-    closePeerConnection(peerName);
+    closePeerConnection(peerId);
   }
 }

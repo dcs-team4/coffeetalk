@@ -16,10 +16,10 @@ declare namespace messages {
   type SendableMessage = PeerExchange | JoinPeers | LeavePeers;
 
   /** Messages that the WebRTC server expects the client to receive. */
-  type ReceivableMessage = ReceivedPeerExchange | PeerStatus | ConnectionSuccess | Error;
+  type ReceivableMessage = ReceivedPeerExchange | PeerJoined | PeerLeft | ConnectionSuccess | Error;
 
   type PeerExchange = {
-    to: string;
+    receiverId: number;
   } & (
     | {
         type: MessageTypes["PEER_OFFER" | "PEER_ANSWER"];
@@ -32,21 +32,28 @@ declare namespace messages {
   );
 
   type ReceivedPeerExchange = PeerExchange & {
-    from: string;
+    senderId: number;
+    senderName: string;
   };
 
   type JoinPeers = {
     type: MessageTypes["JOIN_PEERS"];
-    username: string;
+    name: string;
   };
 
   type LeavePeers = {
     type: MessageTypes["LEAVE_PEERS"];
   };
 
-  type PeerStatus = {
-    type: MessageTypes["PEER_JOINED" | "PEER_LEFT"];
-    username: string;
+  type PeerJoined = {
+    type: MessageTypes["PEER_JOINED"];
+    id: number;
+    name: string;
+  };
+
+  type PeerLeft = {
+    type: MessageTypes["PEER_LEFT"];
+    id: number;
   };
 
   type ConnectionSuccess = {

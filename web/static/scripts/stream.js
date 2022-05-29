@@ -18,7 +18,7 @@ export function joinStream() {
   const user = login();
   if (!user.ok) return;
 
-  sendWebRTCMessage({ type: messages.JOIN_PEERS, username: user.name });
+  sendWebRTCMessage({ type: messages.JOIN_PEERS, name: user.name });
   connectMQTT();
   displayStream();
   incrementPeerCount();

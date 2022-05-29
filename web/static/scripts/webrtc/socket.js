@@ -91,21 +91,21 @@ function handleMessage(event) {
 
   switch (message.type) {
     case messages.PEER_OFFER:
-      receivePeerOffer(message.from, message.data);
+      receivePeerOffer(message.senderId, message.senderName, message.data);
       break;
     case messages.PEER_ANSWER:
-      receivePeerAnswer(message.from, message.data);
+      receivePeerAnswer(message.senderId, message.data);
       break;
     case messages.ICE_CANDIDATE:
-      receiveICECandidate(message.from, message.data);
+      receiveICECandidate(message.senderId, message.data);
       break;
     case messages.PEER_JOINED:
       incrementPeerCount();
-      if (inStream) handleNewPeer(message.username);
+      if (inStream) handleNewPeer(message.id, message.name);
       break;
     case messages.PEER_LEFT:
       decrementPeerCount();
-      closePeerConnection(message.username);
+      closePeerConnection(message.id);
       break;
     case messages.CONNECTION_SUCCESS:
       setPeerCount(message.peerCount);

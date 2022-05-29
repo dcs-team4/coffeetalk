@@ -2,6 +2,7 @@ package signaling
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/gorilla/websocket"
@@ -45,29 +46,40 @@ func (user *User) HandleMessage(rawMessage []byte) {
 	case MsgPeerAnswer:
 		fallthrough
 	case MsgICECandidate:
-		var peerExchange PeerExchangeMessage
-		if !DeserializeMsg(rawMessage, &peerExchange, user) {
+		var message PeerExchangeMessage
+		if !DeserializeMsg(rawMessage, &message, user) {
 			return
 		}
 
-		target, ok := peerExchange.Validate(user)
+		target, ok := message.Validate(user)
 		if !ok {
 			return
 		}
 
 		// Forwards the peer exchange message to the intended target.
-		target.WriteJSON(peerExchange)
+		target.WriteJSON(message)
 	case MsgJoinPeers:
-		var joinStream PeerStatusMessage
-		if !DeserializeMsg(rawMessage, &joinStream, user) {
+		var message JoinPeersMessage
+		if !DeserializeMsg(rawMessage, &message, user) {
 			return
 		}
 
-		log.Printf("%v message received from: %v\n", MsgJoinPeers, joinStream.Username)
+		log.Printf(
+			"User %v requested to join the stream with username: %v", user.ID, message.Name,
+		)
 
-		user.JoinPeers(joinStream.Username)
+		err := user.JoinPeers(message.Name)
+		if err != nil {
+			log.Printf("User %v (%v) failed to join stream: %v\n", user.ID, message.Name, err)
+			user.Socket.WriteJSON(ErrorMessage{
+				Message{MsgError},
+				fmt.Sprint("Failed to join peer-to-peer stream:", err),
+			})
+		}
 	case MsgLeavePeers:
-		log.Printf("%v message received from: %v\n", MsgLeavePeers, user.Name)
+		log.Printf(
+			"User %v (%v) requested to leave the stream.\n", user.ID, user.Name,
+		)
 
 		user.LeavePeers()
 	default:
@@ -91,21 +103,23 @@ func DeserializeMsg(rawMessage []byte, pointer any, sender *User) (ok bool) {
 	return true
 }
 
-// Validates the given peer exchange message. If valid, sets the message's From field to the given
-// sender's username, and returns the target peer's connection. Otherwise, returns ok=false.
-func (message *PeerExchangeMessage) Validate(sender *User) (target *websocket.Conn, ok bool) {
-	targetUser, ok := users.GetByName(message.To)
+// Validates the given peer exchange message. If valid, sets the message's sender fields to the
+// given sender's ID and name, and returns the receiving peer's connection.
+func (message *PeerExchangeMessage) Validate(sender *User) (receiver *websocket.Conn, valid bool) {
+	receivingUser, valid := users.Get(message.ReceiverID)
 
-	if !ok {
+	if !valid {
 		errMsg := "Invalid message target"
 		sender.Socket.WriteJSON(ErrorMessage{Message{MsgError}, errMsg})
-		log.Printf("%v: %v\n", errMsg, message.To)
+		log.Printf("%v: %v\n", errMsg, message.ReceiverID)
 		return nil, false
 	}
 
 	sender.Lock.RLock()
 	defer sender.Lock.RUnlock()
-	message.From = sender.Name
 
-	return targetUser.Socket, true
+	message.SenderID = sender.ID
+	message.SenderName = sender.Name
+
+	return receivingUser.Socket, true
 }
