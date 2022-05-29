@@ -9,6 +9,7 @@
   },
   "include": ["static/scripts"],
   "typeAcquisition": {
+    "enable": true,
     "include": ["paho-mqtt"]
   }
 }
