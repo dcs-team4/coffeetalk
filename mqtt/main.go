@@ -36,11 +36,11 @@ func runBroker(socketPort string, tcpPort string, close chan<- struct{}) *mqtt.S
 		log.Panicln(err)
 	}
 
-	go func() {
-		err := mqttBroker.Serve()
+	err = mqttBroker.Serve()
+	if err != nil {
 		log.Println("MQTT broker failed:", err)
 		close <- struct{}{}
-	}()
+	}
 
 	log.Printf("MQTT broker listening on ports %v (WebSocket), %v (TCP)...\n", socketPort, tcpPort)
 	return mqttBroker

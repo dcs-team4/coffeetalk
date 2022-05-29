@@ -100,9 +100,9 @@ func runQuestionState(machine *QuizMachine) (nextState stm.StateID, err error) {
 	return answerState, nil
 }
 
-// Publishes the answer to the previous question to the MQTT broker.
-// Then, if the quiz has reached its final question, ends the quiz and returns the Idle state;
-// otherwise, waits for the answer timer event before transitioning to the Question state.
+// Publishes the answer to the previous quiz question, and waits for the answer timer event.
+// Then, if the quiz has reached its final question, ends the quiz and returns to the Idle state;
+// otherwise, transitions to a new Question state.
 func runAnswerState(machine *QuizMachine) (nextState stm.StateID, err error) {
 	question, err := machine.currentQuestion()
 	if err != nil {
@@ -111,15 +111,15 @@ func runAnswerState(machine *QuizMachine) (nextState stm.StateID, err error) {
 
 	machine.broker.Publish(AnswerTopic, []byte(question.Answer), true)
 
+	go stm.SetTimer(answerDuration, machine.answerTimer)
+	<-machine.answerTimer
+
 	// If this is the final question, end the quiz and clean up the questions.
 	if len(machine.questions) >= maxQuestionCount {
 		machine.broker.Publish(QuizStatusTopic, []byte(QuizEndMessage), true)
 		machine.questions = make([]Question, 0)
 		return idleState, nil
 	}
-
-	go stm.SetTimer(answerDuration, machine.answerTimer)
-	<-machine.answerTimer
 
 	return questionState, nil
 }
