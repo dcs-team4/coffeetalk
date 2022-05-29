@@ -39,9 +39,7 @@ func New(socketPort string, tcpPort string) (*mqtt.Server, error) {
 		return nil, fmt.Errorf("tcp listener setup failed: %w", err)
 	}
 
-	broker.Events.OnConnect = func(client events.Client, packet events.Packet) {
-		log.Printf("%v connected.\n", client.ID)
-	}
+	registerEventLoggers(broker)
 
 	return broker, nil
 }
@@ -69,4 +67,23 @@ func configureListener() (*listeners.Config, error) {
 	}
 
 	return config, nil
+}
+
+// Registers handlers to log events on the given broker.
+func registerEventLoggers(broker *mqtt.Server) {
+	broker.Events.OnConnect = func(client events.Client, packet events.Packet) {
+		log.Printf("Client connected (ID %v).\n", client.ID)
+	}
+
+	broker.Events.OnDisconnect = func(client events.Client, err error) {
+		if err == nil {
+			log.Printf("Client disconnected (ID %v).\n", client.ID)
+		} else {
+			log.Printf("Client disconnected (ID %v) with error: %v\n", client.ID, err)
+		}
+	}
+
+	broker.Events.OnError = func(client events.Client, err error) {
+		log.Printf("Server error (client ID %v): %v\n", client.ID, err)
+	}
 }
