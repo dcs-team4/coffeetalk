@@ -3,7 +3,7 @@ module github.com/dcs-team4/coffeetalk/mqtt
 go 1.18
 
 require (
-	github.com/dcs-team4/coffeetalk/stm v1.0.1
+	github.com/dcs-team4/coffeetalk/stm v1.1.0
 	github.com/mochi-co/mqtt v1.2.1
 )
 

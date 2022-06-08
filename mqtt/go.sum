@@ -1,6 +1,6 @@
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
-github.com/dcs-team4/coffeetalk/stm v1.0.1 h1:cE/kvJZulwqOh1YXqTgvpH16Gd+bLnszAVcrnUaNOtc=
-github.com/dcs-team4/coffeetalk/stm v1.0.1/go.mod h1:mdrOr2uQHvXB23v/S3MN/v2L+AuWgvsehwXwJNwGXGw=
+github.com/dcs-team4/coffeetalk/stm v1.1.0 h1:Zf+EREL6f4+cUIejF+IlOFbM4tUpCrLXKDRVJ9Y00PU=
+github.com/dcs-team4/coffeetalk/stm v1.1.0/go.mod h1:mdrOr2uQHvXB23v/S3MN/v2L+AuWgvsehwXwJNwGXGw=
 github.com/gorilla/websocket v1.5.0 h1:PPwGk2jz7EePpoHN/+ClbZu8SPxiqlu12wZP/3sWmnc=
 github.com/gorilla/websocket v1.5.0/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/jinzhu/copier v0.3.5 h1:GlvfUwHk62RokgqVNvYsku0TATCF7bAHVwEXoBh3iJg=
