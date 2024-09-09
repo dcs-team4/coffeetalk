@@ -46,7 +46,7 @@ func (user *User) HandleMessage(rawMessage []byte) {
 	err := json.Unmarshal(rawMessage, &baseMessage)
 	if err != nil {
 		errMsg := "Invalid message"
-		user.Socket.WriteJSON(ErrorMessage{Message{MsgError}, errMsg})
+		user.SendMessage(ErrorMessage{Message{MsgError}, errMsg})
 		log.Printf("%v: %v\n", errMsg, err)
 		return
 	}
@@ -70,7 +70,7 @@ func (user *User) HandleMessage(rawMessage []byte) {
 		}
 
 		// Forwards the peer exchange message to the intended target.
-		target.WriteJSON(message)
+		target.SendMessage(message)
 	case MsgJoinPeers:
 		var message JoinPeersMessage
 		if !DeserializeMsg(rawMessage, &message, user) {
@@ -84,7 +84,7 @@ func (user *User) HandleMessage(rawMessage []byte) {
 		err := user.JoinPeers(message.Name)
 		if err != nil {
 			log.Printf("User %v (%v) failed to join stream: %v\n", user.ID, message.Name, err)
-			user.Socket.WriteJSON(ErrorMessage{
+			user.SendMessage(ErrorMessage{
 				Message{MsgError},
 				fmt.Sprint("Failed to join peer-to-peer stream:", err),
 			})
@@ -108,7 +108,7 @@ func DeserializeMsg(rawMessage []byte, pointer any, sender *User) (ok bool) {
 
 	if err != nil {
 		errMsg := "Invalid message received"
-		sender.Socket.WriteJSON(ErrorMessage{Message{MsgError}, errMsg})
+		sender.SendMessage(ErrorMessage{Message{MsgError}, errMsg})
 		log.Printf("%v: %v\n", errMsg, err)
 		return false
 	}
@@ -117,13 +117,13 @@ func DeserializeMsg(rawMessage []byte, pointer any, sender *User) (ok bool) {
 }
 
 // Validates the given peer exchange message. If valid, sets the message's sender fields to the
-// given sender's ID and name, and returns the receiving peer's connection.
-func (message *PeerExchangeMessage) Validate(sender *User) (receiver *websocket.Conn, valid bool) {
+// given sender's ID and name, and returns the receiving peer.
+func (message *PeerExchangeMessage) Validate(sender *User) (receiver *User, valid bool) {
 	receivingUser, valid := users.Get(message.ReceiverID)
 
 	if !valid {
 		errMsg := "Invalid message target"
-		sender.Socket.WriteJSON(ErrorMessage{Message{MsgError}, errMsg})
+		sender.SendMessage(ErrorMessage{Message{MsgError}, errMsg})
 		log.Printf("%v: %v\n", errMsg, message.ReceiverID)
 		return nil, false
 	}
@@ -134,5 +134,5 @@ func (message *PeerExchangeMessage) Validate(sender *User) (receiver *websocket.
 	message.SenderID = sender.ID
 	message.SenderName = sender.Name
 
-	return receivingUser.Socket, true
+	return receivingUser, true
 }

@@ -58,6 +58,19 @@ func (user *User) Register() {
 	users.Map[userID] = user
 }
 
+// Our WebSocket library supports 1 concurrent reader and 1 concurrent writer at a time. We ensure
+// a single reader by having only one goroutine running [User.Listen], but since multiple goroutines
+// may want to write at the same time, we must enforce that by acquiring the user's lock, which this
+// method does.
+func (user *User) SendMessage(message any) {
+	user.Lock.Lock()
+	defer user.Lock.Unlock()
+
+	if err := user.Socket.WriteJSON(message); err != nil {
+		log.Printf("Failed to send message to user %d: %v (message: %v)\n", user.ID, err, message)
+	}
+}
+
 // Returns whether the given user has joined the peer-to-peer stream.
 func (user *User) IsPeer() bool {
 	user.Lock.RLock()
@@ -89,12 +102,15 @@ func (user *User) JoinPeers(username string) error {
 		return err
 	}
 
+	users.Lock.RLock()
+	defer users.Lock.RUnlock()
+
 	for _, otherUser := range users.Map {
 		if user.ID == otherUser.ID {
 			continue
 		}
 
-		otherUser.Socket.WriteJSON(PeerJoinedMessage{Message{MsgPeerJoined}, user.ID, username})
+		otherUser.SendMessage(PeerJoinedMessage{Message{MsgPeerJoined}, user.ID, username})
 	}
 
 	return nil
@@ -133,7 +149,7 @@ func (user *User) HandlePeerLeft() {
 			continue
 		}
 
-		otherUser.Socket.WriteJSON(PeerLeftMessage{Message{MsgPeerLeft}, user.ID})
+		otherUser.SendMessage(PeerLeftMessage{Message{MsgPeerLeft}, user.ID})
 	}
 }
 
