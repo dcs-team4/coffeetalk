@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	mqtt "github.com/mochi-co/mqtt/server"
 	"github.com/mochi-co/mqtt/server/events"
@@ -14,6 +15,7 @@ import (
 )
 
 // For production environment: expects tls-cert.pem and tls-key.pem in tls directory.
+//
 //go:embed all:tls
 var tlsFiles embed.FS
 
@@ -84,6 +86,10 @@ func registerEventLoggers(broker *mqtt.Server) {
 	}
 
 	broker.Events.OnError = func(client events.Client, err error) {
-		log.Printf("Server error (client ID %v): %v\n", client.ID, err)
+		if strings.Contains(err.Error(), "connection not open") {
+			broker.Clients.Delete(client.ID)
+		} else {
+			log.Printf("Server error (client ID %v): %v\n", client.ID, err)
+		}
 	}
 }
