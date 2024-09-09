@@ -174,9 +174,21 @@ export function createPeerConnection(peerId, peerName) {
   // Initializes the peer connection with a STUN service (Session Traversal Utilities for NAT).
   const connection = new RTCPeerConnection({
     iceServers: [
+      // Using Google's public STUN servers
       {
-        // Open source STUN service (https://www.stunprotocol.org/)
-        urls: "stun:stun.stunprotocol.org",
+        urls: "stun.l.google.com:19302",
+      },
+      {
+        urls: "stun1.l.google.com:19302,",
+      },
+      {
+        urls: "stun2.l.google.com:19302",
+      },
+      {
+        urls: "stun3.l.google.com:19302",
+      },
+      {
+        urls: "stun4.l.google.com:19302",
       },
     ],
   });
