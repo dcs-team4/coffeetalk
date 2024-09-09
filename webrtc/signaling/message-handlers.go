@@ -11,15 +11,28 @@ import (
 // Listens for WebSocket messages from the given user, and forwards them to HandleMessage.
 // Stops when the socket is closed.
 func (user *User) Listen() {
+	// Handle panics here, so one panicking user doesn't bring down the server.
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("Disconnecting user ID %d due to panic: %v\n", user.ID, err)
+			user.remove()
+			user.closeConnection()
+		}
+	}()
+
 	for {
 		_, message, err := user.Socket.ReadMessage()
-
 		if err != nil {
-			if _, ok := err.(*websocket.CloseError); ok {
-				return
+			log.Printf(
+				"Disconnecting user ID %d due to WebSocket error: %v\n",
+				user.ID,
+				err,
+			)
+			user.remove()
+			if _, isClosed := err.(*websocket.CloseError); !isClosed {
+				user.closeConnection()
 			}
-			log.Println("Failed to read socket message:", err)
-			continue
+			return
 		}
 
 		user.HandleMessage(message)

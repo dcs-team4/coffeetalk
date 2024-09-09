@@ -44,17 +44,6 @@ func NewUser(socket *websocket.Conn) (user *User, userID int) {
 	// Starts a goroutine for handling messages from the user.
 	go user.Listen()
 
-	socket.SetCloseHandler(func(code int, text string) error {
-		removeUser(userID)
-
-		if user.IsPeer() {
-			user.HandlePeerLeft()
-		}
-
-		log.Printf("Socket with user ID %v closed.\n", userID)
-		return nil
-	})
-
 	return user, userID
 }
 
@@ -128,11 +117,10 @@ func (user *User) SetName(username string) error {
 // Removes the user from the peer-to-peer stream, and notifies other users.
 func (user *User) LeavePeers() {
 	user.Lock.Lock()
-	defer user.Lock.Unlock()
+	user.Name = ""
+	user.Lock.Unlock()
 
 	user.HandlePeerLeft()
-
-	user.Name = ""
 }
 
 // Sends a message to all other users that the given user has left the peer-to-peer stream.
@@ -149,12 +137,30 @@ func (user *User) HandlePeerLeft() {
 	}
 }
 
-// Removes the user with the given userID from the users map.
-func removeUser(userID int) {
+// Removes the user with the given userID from the users map, and notifies other peers.
+func (user *User) remove() {
 	users.Lock.Lock()
-	defer users.Lock.Unlock()
+	delete(users.Map, user.ID)
+	users.Lock.Unlock()
 
-	delete(users.Map, userID)
+	if user.IsPeer() {
+		user.HandlePeerLeft()
+	}
+}
+
+// Closes the user's WebSocket connection.
+func (user *User) closeConnection() {
+	user.Lock.Lock()
+	defer user.Lock.Unlock()
+
+	if err := user.Socket.Close(); err != nil {
+		log.Printf(
+			"Failed to close connection for user '%s' (ID %d): %v\n",
+			user.Name,
+			user.ID,
+			err,
+		)
+	}
 }
 
 // Returns the user of the given userID from the users map, or ok=false if not found.
